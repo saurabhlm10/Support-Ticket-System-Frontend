@@ -43,80 +43,80 @@ function Chat() {
   }
 
   return (
-   
 
-<div className="w-full px-5 flex flex-col justify-between">
-<div className="flex flex-col mt-5">
-  <div className="flex justify-end mb-4">
-    <div
-      className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-    >
-      Welcome to group everyone !
-    </div>
-    <img
-      src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-      className="object-cover h-8 w-8 rounded-full"
-      alt=""
-    />
-  </div>
-  <div className="flex justify-start mb-4">
-    <img
-      src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-      className="object-cover h-8 w-8 rounded-full"
-      alt=""
-    />
-    <div
-      className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-    >
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
-      at praesentium, aut ullam delectus odio error sit rem. Architecto
-      nulla doloribus laborum illo rem enim dolor odio saepe,
-      consequatur quas?
-    </div>
-  </div>
-  <div className="flex justify-end mb-4">
-    <div>
-      <div
-        className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-      >
-        Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-        Magnam, repudiandae.
-      </div>
 
-      <div
-        className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
-      >
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-        Debitis, reiciendis!
+    <div className="w-full px-5 flex flex-col justify-between">
+      <div className="flex flex-col mt-5">
+        <div className="flex justify-end mb-4">
+          <div
+            className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+          >
+            Welcome to group everyone !
+          </div>
+          <img
+            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+            className="object-cover h-8 w-8 rounded-full"
+            alt=""
+          />
+        </div>
+        <div className="flex justify-start mb-4">
+          <img
+            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+            className="object-cover h-8 w-8 rounded-full"
+            alt=""
+          />
+          <div
+            className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+          >
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
+            at praesentium, aut ullam delectus odio error sit rem. Architecto
+            nulla doloribus laborum illo rem enim dolor odio saepe,
+            consequatur quas?
+          </div>
+        </div>
+        <div className="flex justify-end mb-4">
+          <div>
+            <div
+              className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+            >
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+              Magnam, repudiandae.
+            </div>
+
+            <div
+              className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white"
+            >
+              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              Debitis, reiciendis!
+            </div>
+          </div>
+          <img
+            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+            className="object-cover h-8 w-8 rounded-full"
+            alt=""
+          />
+        </div>
+        <div className="flex justify-start mb-4">
+          <img
+            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+            className="object-cover h-8 w-8 rounded-full"
+            alt=""
+          />
+          <div
+            className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
+          >
+            happy holiday guys!
+          </div>
+        </div>
+      </div>
+      <div className="py-2">
+        <input
+          className="w-full bg-gray-300 py-2 px-3 rounded"
+          type="text"
+          placeholder="type your message here..."
+        />
       </div>
     </div>
-    <img
-      src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-      className="object-cover h-8 w-8 rounded-full"
-      alt=""
-    />
-  </div>
-  <div className="flex justify-start mb-4">
-    <img
-      src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-      className="object-cover h-8 w-8 rounded-full"
-      alt=""
-    />
-    <div
-      className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white"
-    >
-      happy holiday guys!
-    </div>
-  </div>
-</div>
-<div className="py-2">
-  <input
-    className="w-full bg-gray-300 py-2 px-3 rounded"
-    type="text"
-    placeholder="type your message here..."
-  />
-</div>
-</div>
   );
 }
 
@@ -348,41 +348,41 @@ export default function Home() {
             </Tabs>
 
             <div className='px-3'>
-            <TextField className='w-full' sx={{paddingY: 0}} />
+              <TextField className='w-full' sx={{ paddingY: 0 }} />
             </div>
 
             <div className='my-2 space-y-1'>
               <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
                 <div>
-                <p className='text-lg'>#1d222</p>
-                <p className=''>shubhamvscode@gmail.com</p>
+                  <p className='text-lg'>#1d222</p>
+                  <p className=''>shubhamvscode@gmail.com</p>
                 </div>
                 <div className='flex justify-between'>
-                <p className='text-xl'>Saurabh</p>
-                <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
-                </div> 
+                  <p className='text-xl'>Saurabh</p>
+                  <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                </div>
               </div>
 
               <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
                 <div>
-                <p className='text-lg'>#4dwe2</p>
-                <p className=''>shubhamvscode@gmail.com</p>
+                  <p className='text-lg'>#4dwe2</p>
+                  <p className=''>shubhamvscode@gmail.com</p>
                 </div>
                 <div className='flex justify-between'>
-                <p className='text-xl'>Saurabh</p>
-                <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
-                </div> 
+                  <p className='text-xl'>Saurabh</p>
+                  <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                </div>
               </div>
 
               <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
                 <div>
-                <p className='text-lg'>#sf55s</p>
-                <p className=''>shubhamvscode@gmail.com</p>
+                  <p className='text-lg'>#sf55s</p>
+                  <p className=''>shubhamvscode@gmail.com</p>
                 </div>
                 <div className='flex justify-between'>
-                <p className='text-xl'>Saurabh</p>
-                <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
-                </div> 
+                  <p className='text-xl'>Saurabh</p>
+                  <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                </div>
               </div>
             </div>
           </div>
@@ -397,7 +397,7 @@ export default function Home() {
             </div>
 
             <div className='h-(calc(100vh-56px))'>
-              <Chat/>
+              <Chat />
             </div>
           </div>
           <div className='col-span-1'>
