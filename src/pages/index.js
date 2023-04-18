@@ -269,76 +269,123 @@ export default function Home() {
           </div>
 
 
-          <div className='bg-pink-100 col-span-3 h-screen'>
-            {Object.keys(activeChat).length === 0 ? (
-              <div>
-                Nothing
-              </div>
-            ) : (
+          <div className='grid grid-cols-5 h-screen'>
+            <div className='col-span-1'>
+              <Tabs className='' aria-label="icon label tabs example">
+                <Tab label="OPEN" />
+                <Tab label="REQUESTS" />
+                <Tab label="CLOSED" />
+              </Tabs>
 
-              <div>
-                <div className='bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0'>
-                  <h1>{activeChat.handler.name}</h1>
-                  <div className='text-center'>
-                    {activeChat.type.toUpperCase()} &nbsp;
-                    <span>#{activeChat.tokenId}</span>
+              <div className='px-3'>
+                <TextField className='w-full' sx={{ paddingY: 0 }} />
+              </div>
+
+              <div className='my-2 space-y-1'>
+                <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
+                  <div>
+                    <p className='text-lg'>#1d222</p>
+                    <p className=''>shubhamvscode@gmail.com</p>
                   </div>
-                  <p className='text-right'>{activeChat.studentEmail}</p>
+                  <div className='flex justify-between'>
+                    <p className='text-xl'>Saurabh</p>
+                    <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                  </div>
+                </div>
+
+                <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
+                  <div>
+                    <p className='text-lg'>#4dwe2</p>
+                    <p className=''>shubhamvscode@gmail.com</p>
+                  </div>
+                  <div className='flex justify-between'>
+                    <p className='text-xl'>Saurabh</p>
+                    <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                  </div>
+                </div>
+
+                <div className='mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24'>
+                  <div>
+                    <p className='text-lg'>#sf55s</p>
+                    <p className=''>shubhamvscode@gmail.com</p>
+                  </div>
+                  <div className='flex justify-between'>
+                    <p className='text-xl'>Saurabh</p>
+                    <p className='bg-red-300 w-8 aspect-square grid place-content-center rounded-full '>A</p>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div className='bg-pink-100 col-span-3 h-screen'>
+              {Object.keys(activeChat).length === 0 ? (
+                <div>
+                  Nothing
+                </div>
+              ) : (
 
-            )}
+                <div>
+                  <div className='bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0'>
+                    <h1>{activeChat.handler.name}</h1>
+                    <div className='text-center'>
+                      {activeChat.type.toUpperCase()} &nbsp;
+                      <span>#{activeChat.tokenId}</span>
+                    </div>
+                    <p className='text-right'>{activeChat.studentEmail}</p>
+                  </div>
+                </div>
+
+              )}
 
 
 
-            <div className='h-(calc(100vh-56px))'>
-              {/* <Chat /> */}
+              <div className='h-(calc(100vh-56px))'>
+                {/* <Chat /> */}
+              </div>
+            </div>
+
+
+            <div className='col-span-1'>
+              {Object.keys(activeChat).length !== 0 &&
+                <>
+                  <h1>{activeChat.studentEmail}</h1>
+                  <h1>{activeChat.studentPhone}</h1>
+
+                  {/* <h1>{JSON.stringify(activeChat.info)}</h1> */}
+
+                  {activeChat.type == 'no-access' && (
+                    <>
+                      <h1>NO-ACCESS</h1>
+                      <h1>{activeChat.courseName}</h1>
+                      <img src={`${activeChat.myCoursesScreenshot}`} />
+                      <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                    </>
+
+
+                  )}
+                  {activeChat.type == 'assignment' && (
+                    <>
+                      <h1> assignment</h1>
+                      {/* <h1>{JSON.stringify(activeChat)}</h1> */}
+                    </>
+
+                  )}
+                  {activeChat.type == 'batch-change' && (
+                    <>
+                      <h1>batch-change</h1>
+                      <h1>{activeChat.oldCourseName}</h1>
+                      <h1>{activeChat.newCourseName}</h1>
+                      <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                    </>
+                  )}
+                  {activeChat.type == 'other' && (
+                    <h1>other</h1>
+                  )}
+                </>
+              }
             </div>
           </div>
-
-
-          <div className='col-span-1'>
-            {Object.keys(activeChat).length !== 0 &&
-              <>
-                <h1>{activeChat.studentEmail}</h1>
-                <h1>{activeChat.studentPhone}</h1>
-
-                {/* <h1>{JSON.stringify(activeChat.info)}</h1> */}
-
-                {activeChat.type == 'no-access' && (
-                  <>
-                    <h1>NO-ACCESS</h1>
-                    <h1>{activeChat.courseName}</h1>
-                    <img src={`${activeChat.myCoursesScreenshot}`} />
-                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
-                  </>
-
-
-                )}
-                {activeChat.type == 'assignment' && (
-                  <>
-                    <h1> assignment</h1>
-                    {/* <h1>{JSON.stringify(activeChat)}</h1> */}
-                  </>
-
-                )}
-                {activeChat.type == 'batch-change' && (
-                  <>
-                    <h1>batch-change</h1>
-                    <h1>{activeChat.oldCourseName}</h1>
-                    <h1>{activeChat.newCourseName}</h1>
-                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
-                  </>
-                )}
-                {activeChat.type == 'other' && (
-                  <h1>other</h1>
-                )}
-              </>
-            }
-          </div>
         </div>
-
-      </div >
+      </div>
     </>
   )
 }
