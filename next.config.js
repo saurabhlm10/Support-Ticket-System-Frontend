@@ -4,15 +4,14 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const nextConfig = {
   reactStrictMode: false,
-  async serverMiddleware() {
-    const apiProxy = createProxyMiddleware('/', {
-      target: 'http://localhost:4004/api',
-      changeOrigin: true,
-      pathRewrite: {
-        '^/': '',
-      },
-    });
-  },
+  async rewrites() {
+		return [
+			{
+				source: '/:path*',
+				destination: 'http://localhost:4004/:path*',
+			},
+		]
+	},
 }
 
 module.exports = nextConfig

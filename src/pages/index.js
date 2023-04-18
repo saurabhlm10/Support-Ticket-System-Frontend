@@ -135,6 +135,7 @@ export default function Home() {
   const getUserOpenChats = async () => {
     try {
       const response = await axios.get('/api/issue/chats/open/64344332393b1bc04864070f')
+      // const response = await axios.get('http://localhost:4004/api/issue/chats/open/64344332393b1bc04864070f')
 
       return response.data.openIssues;
 
@@ -169,8 +170,9 @@ export default function Home() {
   useEffect(() => {
     Promise.all([getUserOpenChats(), getUserRequestedChats()])
       .then(([openIssues, requestedIssues]) => {
-        setOpenItems(openIssues)
-        setRequestItems(requestedIssues)
+        openIssues && openIssues.length !== 0 && setOpenItems([...openIssues])
+
+        requestedIssues && requestedIssues !== 0 && setRequestItems([...requestedIssues])
       })
   }, [])
 
