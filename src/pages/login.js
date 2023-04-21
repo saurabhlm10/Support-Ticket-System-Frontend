@@ -1,9 +1,12 @@
 import { useLoginMutation } from '@/redux/api/auth';
 import Link from 'next/link';
-import React, { useState } from 'react'
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react'
 
 function Login() {
     const [loginFormData, setLoginFormData] = useState({})
+
+    const router = useRouter()
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -21,6 +24,14 @@ function Login() {
             loginFunction(loginFormData)
         }
     }
+
+    useEffect(() => {
+        if (loginResponse.isSuccess) {
+            localStorage.setItem("user", JSON.stringify(loginResponse.data?.user))
+            localStorage.setItem("token", JSON.stringify(loginResponse.data?.token))
+            router.push("/")
+        }
+    }, [loginResponse])
 
     return (
         <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">

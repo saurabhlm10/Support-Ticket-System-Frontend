@@ -170,6 +170,8 @@ export default function Home() {
   useEffect(() => {
     Promise.all([getUserOpenChats(), getUserRequestedChats()])
       .then(([openIssues, requestedIssues]) => {
+        console.log(openIssues)
+        console.log(requestedIssues)
         openIssues && openIssues.length !== 0 && setOpenItems([...openIssues])
 
         requestedIssues && requestedIssues !== 0 && setRequestItems([...requestedIssues])
@@ -269,8 +271,7 @@ export default function Home() {
           </div>
 
 
-          <div className='grid grid-cols-5 h-screen'>
-            <div className='col-span-1'>
+          {/* <div className='col-span-1'>
               <Tabs className='' aria-label="icon label tabs example">
                 <Tab label="OPEN" />
                 <Tab label="REQUESTS" />
@@ -315,74 +316,73 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
-            <div className='bg-pink-100 col-span-3 h-screen'>
-              {Object.keys(activeChat).length === 0 ? (
-                <div>
-                  Nothing
-                </div>
-              ) : (
-
-                <div>
-                  <div className='bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0'>
-                    <h1>{activeChat.handler.name}</h1>
-                    <div className='text-center'>
-                      {activeChat.type.toUpperCase()} &nbsp;
-                      <span>#{activeChat.tokenId}</span>
-                    </div>
-                    <p className='text-right'>{activeChat.studentEmail}</p>
-                  </div>
-                </div>
-
-              )}
-
-
-
-              <div className='h-(calc(100vh-56px))'>
-                {/* <Chat /> */}
+            </div> */}
+          <div className='bg-pink-100 col-span-3 h-screen'>
+            {Object.keys(activeChat).length === 0 ? (
+              <div>
+                Nothing
               </div>
+            ) : (
+
+              <div>
+                <div className='bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0'>
+                  <h1>{activeChat.handler.name}</h1>
+                  <div className='text-center'>
+                    {activeChat.type.toUpperCase()} &nbsp;
+                    <span>#{activeChat.tokenId}</span>
+                  </div>
+                  <p className='text-right'>{activeChat.studentEmail}</p>
+                </div>
+              </div>
+
+            )}
+
+
+
+            <div className='h-(calc(100vh-56px))'>
+              {/* <Chat /> */}
             </div>
+          </div>
 
 
-            <div className='col-span-1'>
-              {Object.keys(activeChat).length !== 0 &&
-                <>
-                  <h1>{activeChat.studentEmail}</h1>
-                  <h1>{activeChat.studentPhone}</h1>
+          <div className='col-span-1'>
+            {Object.keys(activeChat).length !== 0 &&
+              <>
+                <h1>{activeChat.studentEmail}</h1>
+                <h1>{activeChat.studentPhone}</h1>
 
-                  {/* <h1>{JSON.stringify(activeChat.info)}</h1> */}
+                {/* <h1>{JSON.stringify(activeChat.info)}</h1> */}
 
-                  {activeChat.type == 'no-access' && (
-                    <>
-                      <h1>NO-ACCESS</h1>
-                      <h1>{activeChat.courseName}</h1>
-                      <img src={`${activeChat.myCoursesScreenshot}`} />
-                      <img src={`${activeChat.paymentReceiptScreenshot}`} />
-                    </>
+                {activeChat.type == 'no-access' && (
+                  <>
+                    <h1>NO-ACCESS</h1>
+                    <h1>{activeChat.courseName}</h1>
+                    <img src={`${activeChat.myCoursesScreenshot}`} />
+                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                  </>
 
 
-                  )}
-                  {activeChat.type == 'assignment' && (
-                    <>
-                      <h1> assignment</h1>
-                      {/* <h1>{JSON.stringify(activeChat)}</h1> */}
-                    </>
+                )}
+                {activeChat.type == 'assignment' && (
+                  <>
+                    <h1> assignment</h1>
+                    {/* <h1>{JSON.stringify(activeChat)}</h1> */}
+                  </>
 
-                  )}
-                  {activeChat.type == 'batch-change' && (
-                    <>
-                      <h1>batch-change</h1>
-                      <h1>{activeChat.oldCourseName}</h1>
-                      <h1>{activeChat.newCourseName}</h1>
-                      <img src={`${activeChat.paymentReceiptScreenshot}`} />
-                    </>
-                  )}
-                  {activeChat.type == 'other' && (
-                    <h1>other</h1>
-                  )}
-                </>
-              }
-            </div>
+                )}
+                {activeChat.type == 'batch-change' && (
+                  <>
+                    <h1>batch-change</h1>
+                    <h1>{activeChat.oldCourseName}</h1>
+                    <h1>{activeChat.newCourseName}</h1>
+                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                  </>
+                )}
+                {activeChat.type == 'other' && (
+                  <h1>other</h1>
+                )}
+              </>
+            }
           </div>
         </div>
       </div>

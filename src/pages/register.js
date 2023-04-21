@@ -1,6 +1,7 @@
 import { useLoginMutation, useRegisterMutation } from '@/redux/api/auth';
 import Link from 'next/link';
 import React, { useState } from 'react'
+import { useEffect } from 'react';
 
 function Login() {
     const [loginFormData, setLoginFormData] = useState({})
@@ -22,6 +23,12 @@ function Login() {
         }
     }
 
+    useEffect(()=> {
+        if(registerResponse.isSuccess){
+            localStorage.setItem("user", registerResponse.data)
+        }
+    }, [registerResponse])
+
     return (
         <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-xl">
@@ -31,7 +38,7 @@ function Login() {
                 <form className="mt-6" onSubmit={handleSubmit}>
                     <div className="mb-2">
                         <label
-                            for="name"
+                            htmlFor="name"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Name
@@ -46,7 +53,7 @@ function Login() {
                     </div>
                     <div className="mb-2">
                         <label
-                            for="role"
+                            htmlFor="role"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Role
@@ -61,7 +68,22 @@ function Login() {
                     </div>
                     <div className="mb-2">
                         <label
-                            for="email"
+                            htmlFor="domain"
+                            className="block text-sm font-semibold text-gray-800"
+                        >
+                            Domain
+                        </label>
+                        <input
+                            onChange={handleChange}
+                            name='domain'
+                            id='domain'
+                            type="text"
+                            className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        />
+                    </div>
+                    <div className="mb-2">
+                        <label
+                            htmlFor="email"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Email
@@ -75,7 +97,7 @@ function Login() {
                     </div>
                     <div className="mb-2">
                         <label
-                            for="password"
+                            htmlFor="password"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Password
