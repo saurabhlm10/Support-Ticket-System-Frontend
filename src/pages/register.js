@@ -18,6 +18,7 @@ function Login() {
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        console.log(loginFormData)
         if (Object.values(loginFormData).every(value => value?.trim() !== ('' || undefined || null))) {
             registerFunction(loginFormData)
         }

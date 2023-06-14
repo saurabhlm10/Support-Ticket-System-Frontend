@@ -1,4 +1,4 @@
-import { useLoginMutation } from '@/redux/api/auth';
+import { useGetProfileQuery, useLoginMutation } from '@/redux/api/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react'
@@ -33,6 +33,8 @@ function Login() {
         }
     }, [loginResponse])
 
+
+
     return (
         <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-xl">
@@ -42,7 +44,7 @@ function Login() {
                 <form className="mt-6" onSubmit={handleSubmit}>
                     <div className="mb-2">
                         <label
-                            for="email"
+                            htmlFor="email"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Email
@@ -56,7 +58,7 @@ function Login() {
                     </div>
                     <div className="mb-2">
                         <label
-                            for="password"
+                            htmlFor="password"
                             className="block text-sm font-semibold text-gray-800"
                         >
                             Password
