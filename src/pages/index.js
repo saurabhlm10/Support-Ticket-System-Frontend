@@ -5,10 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import { Tab, Tabs, TextField, Typography } from '@mui/material';
 import axios from 'axios';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'] })
 
-// const socket = io('http://localhost:4000');
+axios.defaults.baseURL = process.env.SERVER_URL
 
 function Chat() {
   const [username, setUsername] = useState('')
@@ -135,7 +136,6 @@ export default function Home() {
   const getUserOpenChats = async () => {
     try {
       const response = await axios.get('/api/issue/chats/open/64344332393b1bc04864070f')
-      // const response = await axios.get('http://localhost:4004/api/issue/chats/open/64344332393b1bc04864070f')
 
       return response.data.openIssues;
 
@@ -188,6 +188,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div>
+      <Toaster position="top-right" />
         {/* <Chat /> */}
         <div className='grid grid-cols-5 h-screen '>
           <div className='col-span-1 overflow-y-scroll'>
