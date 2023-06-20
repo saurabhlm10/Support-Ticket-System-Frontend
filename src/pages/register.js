@@ -10,12 +10,15 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { axiosInstance } from "@/axios";
 import { toast } from "react-hot-toast";
+import { setId } from "@/redux/features/mainSlice";
+import { useDispatch } from "react-redux";
 
 // axios.defaults.baseURL = process.env.SERVER_URL
 
 
-function Login() {
+function Register() {
 
+  const dispatch = useDispatch()
   const router = useRouter();
 
   const onRegister = async (data) => {
@@ -27,7 +30,9 @@ function Login() {
 
       console.log(response);
 
-      return router.push(`/profile/${response.data.user._id}`);
+      // dispatch(setId({ id: response.data.user._id }))
+
+      return router.push(`/profile/${response.data.id}`);
     } catch (error) {
       console.log(error);
       toast.error(error.message)
@@ -165,4 +170,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default Register;

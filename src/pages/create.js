@@ -3,14 +3,15 @@ import { courses } from "../courses";
 import axios from "axios";
 import { Autocomplete, TextField } from "@mui/material";
 import Head from "next/head";
+import { axiosInstance } from "@/axios";
 
 const create = () => {
   const [handlersArray, setHandlersArray] = useState([]);
   const [allHandlersList, setAllHandlersList] = useState([]);
   const [linkToggler, setLinkToggler] = useState("Link");
-  const [studentName, setStudentName] = useState("");
-  const [studentEmail, setStudentEmail] = useState("");
-  const [studentPhone, setStudentPhone] = useState("");
+  const [studentName, setStudentName] = useState("saurabh");
+  const [studentEmail, setStudentEmail] = useState("saurabh@gmail.com");
+  const [studentPhone, setStudentPhone] = useState("1111111111");
   const [issueType, setIssueType] = useState("No-Access");
   const [description, setDescription] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -71,6 +72,8 @@ const create = () => {
   const [titleErrorMessage, setTitleErrorMessage] = useState("default");
 
   const createTicket = async () => {
+    console.log('Hello Creat Ticket')
+
     // Handle Missing Fields
 
     if (!studentName) {
@@ -214,8 +217,7 @@ const create = () => {
 
     switch (issueType) {
       case "No-Access": {
-        if (linkToggler !== "Link")
-          formData.append("paymentReceiptImage", paymentReceipt);
+        if (linkToggler !== "Link") formData.append("paymentReceiptImage", paymentReceipt);
 
         info = {
           courseName: noAccessCourseName,
@@ -251,6 +253,7 @@ const create = () => {
     }
 
     try {
+      console.log('Hello try')
       attachments.length > 0 &&
         attachments.forEach((attachment) =>
           formData.append("attachmentInput[]", attachment)
@@ -263,7 +266,7 @@ const create = () => {
         studentName,
         studentEmail,
         studentPhone,
-        raiser: "64344332393b1bc04864070f",
+        raiser: "648aa701c16fa669d26216df",
         potentialHandlers:
           handlersArray.length > 1
             ? handlersArray.map((handler) => handler._id)
@@ -279,8 +282,8 @@ const create = () => {
 
       // console.log( formData.getAll('attachmentInput[]'))
 
-      const response = await axios.post(
-        `/api/issue/raiseIssue/${issueType.toLowerCase()}`,
+      const response = await axiosInstance.post(
+        `/issue/raiseIssue/${issueType.toLowerCase()}`,
         formData,
         {
           headers: {
@@ -297,7 +300,9 @@ const create = () => {
 
   const getAllAgents = async () => {
     try {
-      const response = await axios.get("/api/agent/getAllAgents");
+      const response = await axiosInstance.get("/agent/getAllAgents");
+
+      console.log(response.data.allAgentsList)
 
       setAllHandlersList([...response.data.allAgentsList]);
 

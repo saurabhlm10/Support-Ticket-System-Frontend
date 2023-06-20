@@ -1,38 +1,39 @@
-import { useGetProfileQuery, useLoginMutation } from '@/redux/api/auth';
+import { loginSchema } from '@/models/loginSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form';
+import { signIn } from "next-auth/react";
+import { toast } from 'react-hot-toast';
+
 
 function Login() {
-    const [loginFormData, setLoginFormData] = useState({})
 
     const router = useRouter()
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
+    const onLogin = async (data) => {
+        signIn("credentials", {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+        }).then(({ ok, error }) => {
+            if (ok) {
+                router.push("/");
+            } else {
+                return toast.error(error)
+            }
+        })
 
-        setLoginFormData((prev) => ({
-            ...prev, [name]: value
-        }))
+
     }
 
-    const [loginFunction, loginResponse] = useLoginMutation()
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        if (Object.values(loginFormData).every(value => value?.trim() !== ('' || undefined || null))) {
-            loginFunction(loginFormData)
-        }
-    }
-
-    useEffect(() => {
-        if (loginResponse.isSuccess) {
-            localStorage.setItem("user", JSON.stringify(loginResponse.data?.user))
-            localStorage.setItem("token", JSON.stringify(loginResponse.data?.token))
-            router.push("/")
-        }
-    }, [loginResponse])
-
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({ resolver: zodResolver(loginSchema) });
 
 
     return (
@@ -41,7 +42,7 @@ function Login() {
                 <h1 className="text-3xl font-semibold text-center text-purple-700 underline">
                     Sign in
                 </h1>
-                <form className="mt-6" onSubmit={handleSubmit}>
+                <form className="mt-6" onSubmit={handleSubmit(onLogin)}>
                     <div className="mb-2">
                         <label
                             htmlFor="email"
@@ -50,11 +51,15 @@ function Login() {
                             Email
                         </label>
                         <input
-                            onChange={handleChange}
+                            {...register('email')}
+                            // onChange={handleChange}
                             name='email'
                             type="email"
                             className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                         />
+                        {errors.email && (
+                            <span className="text-red-500"> {errors.email.message}</span>
+                        )}
                     </div>
                     <div className="mb-2">
                         <label
@@ -64,11 +69,15 @@ function Login() {
                             Password
                         </label>
                         <input
-                            onChange={handleChange}
+                            {...register('password')}
+                            // onChange={handleChange}
                             name='password'
                             type="password"
                             className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                         />
+                        {errors.password && (
+                            <span className="text-red-500"> {errors.password.message}</span>
+                        )}
                     </div>
                     <a
                         href="#"
