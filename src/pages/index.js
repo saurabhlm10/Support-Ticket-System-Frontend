@@ -10,12 +10,14 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import { mainState } from "@/redux/features/mainSlice";
 import { axiosInstance } from "@/axios";
+import { useSession } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
 function Chat() {
   const [username, setUsername] = useState("");
   const [messages, setMessages] = useState([]);
+
 
   const messageInputRef = useRef();
 
@@ -113,15 +115,15 @@ function Chat() {
 }
 
 export default function Home() {
+  const session = useSession()
+
+
   const [value, setValue] = useState(0);
   const [openItems, setOpenItems] = useState([]);
   const [requestItems, setRequestItems] = useState([]);
   const [closedItems, setClosedItems] = useState([]);
 
   const [activeChat, setActiveChat] = useState({});
-
-  const {id} = useSelector(mainState);
-  console.log(id);
 
   const getUserOpenChats = async () => {
     try {
@@ -162,8 +164,6 @@ export default function Home() {
   useEffect(() => {
     Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
       ([openIssues, requestedIssues]) => {
-        console.log(openIssues);
-        console.log(requestedIssues);
         openIssues && openIssues.length !== 0 && setOpenItems([...openIssues]);
 
         requestedIssues &&
@@ -185,7 +185,7 @@ export default function Home() {
         <Toaster position="top-right" />
 
         <div className="fixed bottom-3 left-3 px-3 py-4 border-2 border-black">
-          <Link href={`/profile/${id}`}>Profile</Link>
+          <Link href={`/profile/${session.data?.user.user._id}`}>Profile</Link>
         </div>
 
         {/* <Chat /> */}

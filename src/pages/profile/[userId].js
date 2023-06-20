@@ -1,9 +1,11 @@
 import { axiosInstance } from "@/axios";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
 const User = () => {
+  const session = useSession()
+
   const router = useRouter();
   const [user, setUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +62,7 @@ const User = () => {
               <h2 className="mb-1 text-blue-600">Role</h2>
               <div>
                 <h2 className="px-2 py-1 border inline-block w-[50vw] md:w-[30vw] border-black rounded">
-                  {user.role}
+                  {user.role.split('-').map(role => role.charAt(0).toUpperCase() + role.slice(1)).join('-')}
                 </h2>
               </div>
             </div>
@@ -68,7 +70,7 @@ const User = () => {
               <h2 className="mb-1 text-blue-600">Team</h2>
               <div>
                 <h2 className="px-2 py-1 border inline-block w-[50vw] md:w-[30vw] border-black rounded">
-                  {user.domain}
+                  {`${user.domain.charAt(0).toUpperCase()}` + `${user.domain.slice(1)}`}
                 </h2>
               </div>
             </div>
@@ -79,13 +81,16 @@ const User = () => {
           </div>
         </section>
       </main>
-      <div className="fixed bottom-6 right-6">
-        <button className="px-4 py-3 border-none bg-blue-600 text-white rounded-md"
-          onClick={async () => await signOut()}
-        >
-          Sign Out
-        </button>
-      </div>
+      {router.query.userId === session.data?.user.user._id && (
+
+        <div className="fixed bottom-6 right-6">
+          <button className="px-4 py-3 border-none bg-blue-600 text-white rounded-md"
+            onClick={async () => await signOut()}
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
     </>
   );
 };

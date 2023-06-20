@@ -72,8 +72,6 @@ const create = () => {
   const [titleErrorMessage, setTitleErrorMessage] = useState("default");
 
   const createTicket = async () => {
-    console.log('Hello Creat Ticket')
-
     // Handle Missing Fields
 
     if (!studentName) {
@@ -253,14 +251,10 @@ const create = () => {
     }
 
     try {
-      console.log('Hello try')
       attachments.length > 0 &&
         attachments.forEach((attachment) =>
           formData.append("attachmentInput[]", attachment)
         );
-
-      console.log("ATTCHMENTS", formData.get("attachmentInput[]"));
-      console.log(formData.get("paymentReceiptImage"));
 
       const options = {
         studentName,
@@ -280,7 +274,6 @@ const create = () => {
 
       // formData.append('attachmentInput', attachments)
 
-      // console.log( formData.getAll('attachmentInput[]'))
 
       const response = await axiosInstance.post(
         `/issue/raiseIssue/${issueType.toLowerCase()}`,
@@ -292,7 +285,6 @@ const create = () => {
         }
       );
 
-      console.log(response);
     } catch (error) {
       console.log(error);
     }
@@ -301,8 +293,6 @@ const create = () => {
   const getAllAgents = async () => {
     try {
       const response = await axiosInstance.get("/agent/getAllAgents");
-
-      console.log(response.data.allAgentsList)
 
       setAllHandlersList([...response.data.allAgentsList]);
 

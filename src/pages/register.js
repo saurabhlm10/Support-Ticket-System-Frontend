@@ -22,13 +22,8 @@ function Register() {
   const router = useRouter();
 
   const onRegister = async (data) => {
-    console.log(data);
     try {
       const response = await axiosInstance.post("/auth/register", data);
-
-      console.log("reached");
-
-      console.log(response);
 
       // dispatch(setId({ id: response.data.user._id }))
 

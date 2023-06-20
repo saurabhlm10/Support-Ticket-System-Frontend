@@ -9,7 +9,6 @@ export default withAuth(
         const pathname = req.nextUrl.pathname;
 
         const isAuth = await getToken({ req });
-        console.log(isAuth)
 
         const isLoginPage = pathname.startsWith("/login");
         const isRegisterPage = pathname.startsWith("/register")
