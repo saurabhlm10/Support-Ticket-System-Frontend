@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/axios";
+import { signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
@@ -79,7 +80,9 @@ const User = () => {
         </section>
       </main>
       <div className="fixed bottom-6 right-6">
-        <button className="px-4 py-3 border-none bg-blue-600 text-white rounded-md">
+        <button className="px-4 py-3 border-none bg-blue-600 text-white rounded-md"
+          onClick={async () => await signOut()}
+        >
           Sign Out
         </button>
       </div>
