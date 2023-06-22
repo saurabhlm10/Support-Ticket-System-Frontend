@@ -5,114 +5,115 @@ import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { Tab, Tabs, TextField, Typography } from "@mui/material";
 import axios from "axios";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import Link from "next/link";
 import { useSelector } from "react-redux";
 import { mainState } from "@/redux/features/mainSlice";
 import { axiosInstance } from "@/axios";
 import { useSession } from "next-auth/react";
+import Chat from "./components/Chat";
 
 const inter = Inter({ subsets: ["latin"] });
 
-function Chat() {
-  const [username, setUsername] = useState("");
-  const [messages, setMessages] = useState([]);
+// function Chat() {
+// const [username, setUsername] = useState("");
+// const [messages, setMessages] = useState([]);
 
 
-  const messageInputRef = useRef();
+// const messageInputRef = useRef();
 
-  useEffect(() => {
-    const user = "Hello" || prompt("Enter your username:");
-    setUsername(user);
-    socket.emit("register", user);
+// useEffect(() => {
+//   const user = "Hello" || prompt("Enter your username:");
+//   setUsername(user);
+//   socket.emit("register", user);
 
-    socket.on("connect", () => {
-      console.log("Connected to Socket.io server");
-    });
+//   socket.on("connect", () => {
+//     console.log("Connected to Socket.io server");
+//   });
 
-    socket.on("disconnect", () => {
-      console.log("Disconnected from Socket.io server");
-    });
+//   socket.on("disconnect", () => {
+//     console.log("Disconnected from Socket.io server");
+//   });
 
-    socket.on("message", (data) => {
-      console.log("Received message:", data);
-      setMessages((messages) => [...messages, data]);
-    });
-  }, []);
+//   socket.on("message", (data) => {
+//     console.log("Received message:", data);
+//     setMessages((messages) => [...messages, data]);
+//   });
+// }, []);
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const text = messageInputRef.current.value.trim();
-    if (text) {
-      socket.emit("message", { text });
-      messageInputRef.current.value = "";
-    }
-  }
+// function handleSubmit(event) {
+//   event.preventDefault();
+//   const text = messageInputRef.current.value.trim();
+//   if (text) {
+//     socket.emit("message", { text });
+//     messageInputRef.current.value = "";
+//   }
+// }
 
-  return (
-    <div className="w-full px-5 flex flex-col justify-between">
-      <div className="flex flex-col mt-5">
-        <div className="flex justify-end mb-4">
-          <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
-            Welcome to group everyone !
-          </div>
-          <img
-            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-            className="object-cover h-8 w-8 rounded-full"
-            alt=""
-          />
-        </div>
-        <div className="flex justify-start mb-4">
-          <img
-            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-            className="object-cover h-8 w-8 rounded-full"
-            alt=""
-          />
-          <div className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat at
-            praesentium, aut ullam delectus odio error sit rem. Architecto nulla
-            doloribus laborum illo rem enim dolor odio saepe, consequatur quas?
-          </div>
-        </div>
-        <div className="flex justify-end mb-4">
-          <div>
-            <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Magnam,
-              repudiandae.
-            </div>
+// return (
+//   <div className="w-full px-5 flex flex-col justify-between">
+//     <div className="flex flex-col mt-5">
+//       <div className="flex justify-end mb-4">
+//         <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
+//           Welcome to group everyone !
+//         </div>
+//         <img
+//           src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+//           className="object-cover h-8 w-8 rounded-full"
+//           alt=""
+//         />
+//       </div>
+//       <div className="flex justify-start mb-4">
+//         <img
+//           src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+//           className="object-cover h-8 w-8 rounded-full"
+//           alt=""
+//         />
+//         <div className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white">
+//           Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat at
+//           praesentium, aut ullam delectus odio error sit rem. Architecto nulla
+//           doloribus laborum illo rem enim dolor odio saepe, consequatur quas?
+//         </div>
+//       </div>
+//       <div className="flex justify-end mb-4">
+//         <div>
+//           <div className="mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
+//             Lorem ipsum dolor, sit amet consectetur adipisicing elit. Magnam,
+//             repudiandae.
+//           </div>
 
-            <div className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis,
-              reiciendis!
-            </div>
-          </div>
-          <img
-            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-            className="object-cover h-8 w-8 rounded-full"
-            alt=""
-          />
-        </div>
-        <div className="flex justify-start mb-4">
-          <img
-            src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
-            className="object-cover h-8 w-8 rounded-full"
-            alt=""
-          />
-          <div className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white">
-            happy holiday guys!
-          </div>
-        </div>
-      </div>
-      <div className="py-2">
-        <input
-          className="w-full bg-gray-300 py-2 px-3 rounded"
-          type="text"
-          placeholder="type your message here..."
-        />
-      </div>
-    </div>
-  );
-}
+//           <div className="mt-4 mr-2 py-3 px-4 bg-blue-400 rounded-bl-3xl rounded-tl-3xl rounded-tr-xl text-white">
+//             Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis,
+//             reiciendis!
+//           </div>
+//         </div>
+//         <img
+//           src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+//           className="object-cover h-8 w-8 rounded-full"
+//           alt=""
+//         />
+//       </div>
+//       <div className="flex justify-start mb-4">
+//         <img
+//           src="https://source.unsplash.com/vpOeXr5wmR4/600x600"
+//           className="object-cover h-8 w-8 rounded-full"
+//           alt=""
+//         />
+//         <div className="ml-2 py-3 px-4 bg-gray-400 rounded-br-3xl rounded-tr-3xl rounded-tl-xl text-white">
+//           happy holiday guys!
+//         </div>
+//       </div>
+//     </div>
+//     <div className="py-2">
+//       <input
+//         className="w-full bg-gray-300 py-2 px-3 rounded"
+//         type="text"
+//         placeholder="type your message here..."
+//       />
+//     </div>
+//   </div>
+// );
+// }
 
 export default function Home() {
   const session = useSession()
@@ -128,11 +129,12 @@ export default function Home() {
   const getUserOpenChats = async () => {
     try {
       const response = await axiosInstance.get(
-        "/issue/chats/open/6490400cde45f8526b9e8a91"
+        `/issue/chats/open/${session.data?.user.user._id}`
       );
 
       return response.data.openIssues;
     } catch (error) {
+      toast.error('Cannot Fetch Open Chats')
       console.log(error);
     }
   };
@@ -140,26 +142,16 @@ export default function Home() {
   const getUserRequestedChats = async () => {
     try {
       const response = await axiosInstance.get(
-        "/issue/chats/requested/6490400cde45f8526b9e8a91"
+        `/issue/chats/requested/${session.data?.user.user._id}`
       );
 
       return response.data.requestedIssues;
     } catch (error) {
+      toast.error('Cannot Fetch Requested Chats')
       console.log(error);
     }
   };
 
-  const getUserClosedChats = async () => {
-    try {
-      const response = await axiosInstance.get(
-        "/issue/chats/closed/6490400cde45f8526b9e8a91"
-      );
-
-      setClosedItems([...response.data.closedIssues]);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   useEffect(() => {
     Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
@@ -167,11 +159,11 @@ export default function Home() {
         openIssues && openIssues.length !== 0 && setOpenItems([...openIssues]);
 
         requestedIssues &&
-          requestedIssues !== 0 &&
+          requestedIssues.length !== 0 &&
           setRequestItems([...requestedIssues]);
       }
     );
-  }, []);
+  }, [session.data?.user]);
 
   return (
     <>
@@ -188,7 +180,6 @@ export default function Home() {
           <Link href={`/profile/${session.data?.user.user._id}`}>Profile</Link>
         </div>
 
-        {/* <Chat /> */}
         <div className="grid grid-cols-5 h-screen ">
           <div className="col-span-1 overflow-y-scroll">
             <div className="px-3 pt-2">
@@ -199,13 +190,13 @@ export default function Home() {
               <Tabs
                 value={value}
                 onChange={(event, newValue) => {
-                  newValue === 2 && getUserClosedChats();
+                  // newValue === 2 && getUserClosedChats();
                   setValue(newValue);
                 }}
               >
                 <Tab label={`OPEN(${openItems.length})`} />
                 <Tab label={`REQUESTS(${requestItems.length})`} />
-                <Tab label={`CLOSED(${closedItems.length})`} />
+                {/* <Tab label={`CLOSED(${closedItems.length})`} /> */}
               </Tabs>
 
               {value === 0 && (
@@ -252,7 +243,7 @@ export default function Home() {
                   ))}
                 </div>
               )}
-              {value === 2 && (
+              {/* {value === 2 && (
                 <div className="my-2 space-y-1">
                   {closedItems.map((item, id) => (
                     <div
@@ -273,7 +264,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-              )}
+              )} */}
             </div>
           </div>
 
@@ -323,7 +314,7 @@ export default function Home() {
                 </div>
               </div>
             </div> */}
-          <div className="bg-pink-100 col-span-3 h-screen">
+          <div className="col-span-3 h-screen">
             {Object.keys(activeChat).length === 0 ? (
               <div>Nothing</div>
             ) : (
@@ -336,13 +327,16 @@ export default function Home() {
                   </div>
                   <p className="text-right">{activeChat.studentEmail}</p>
                 </div>
+                <div className="h-(calc(100vh-56px))">{/* <Chat /> */}
+                  <Chat issueId={activeChat.tokenId} />
+                </div>
               </div>
             )}
 
-            <div className="h-(calc(100vh-56px))">{/* <Chat /> */}</div>
+
           </div>
 
-          <div className="col-span-1">
+          <div className="col-span-1 bg-pink-100 ">
             {Object.keys(activeChat).length !== 0 && (
               <>
                 <h1>{activeChat.studentEmail}</h1>

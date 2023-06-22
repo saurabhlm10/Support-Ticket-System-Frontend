@@ -3,7 +3,7 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const nextConfig = {
-  // reactStrictMode: false,
+  reactStrictMode: false,
 }
 
 module.exports = nextConfig

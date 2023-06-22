@@ -12,6 +12,7 @@ import { axiosInstance } from "@/axios";
 import { toast } from "react-hot-toast";
 import { setId } from "@/redux/features/mainSlice";
 import { useDispatch } from "react-redux";
+import { signIn } from "next-auth/react";
 
 // axios.defaults.baseURL = process.env.SERVER_URL
 
@@ -25,9 +26,19 @@ function Register() {
     try {
       const response = await axiosInstance.post("/auth/register", data);
 
-      // dispatch(setId({ id: response.data.user._id }))
+      return await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      }).then(({ ok, error }) => {
+        if (ok) {
+          router.push("/");
+        } else {
+          return toast.error(error)
+        }
+      })
 
-      return router.push(`/profile/${response.data.id}`);
+      // return router.push(`/profile/${response.data.id}`);
     } catch (error) {
       console.log(error);
       toast.error(error.message)

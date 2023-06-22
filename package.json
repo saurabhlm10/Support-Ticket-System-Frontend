@@ -20,11 +20,13 @@
     "http-proxy-middleware": "^2.0.6",
     "next": "^13.4.3",
     "next-auth": "^4.22.1",
+    "pusher-js": "^8.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "^7.44.3",
     "react-hot-toast": "^2.4.1",
     "react-redux": "^8.0.5",
+    "react-textarea-autosize": "^8.4.1",
     "socket.io-client": "^4.6.1",
     "zod": "^3.21.4"
   },
