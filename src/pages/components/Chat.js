@@ -5,11 +5,11 @@ import { notFound } from "next/navigation";
 import { pusherClient } from "@/lib/pusher";
 import ChatInput from "./ChatInput";
 import { useSession } from "next-auth/react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
-
-  console.log(issueId);
 
   const [input, setInput] = useState("");
 
@@ -17,11 +17,13 @@ const Chat = ({ issueId }) => {
 
   const sendMessage = async (event) => {
     event.preventDefault();
+    if (!input) return;
 
     try {
       const message = {
         text: input,
-        sender: session.data?.user.user._id,
+        senderId: session.data?.user.user._id,
+        senderName: session.data?.user.user.name,
         issueId,
       };
       await axiosInstance.post(`/chat/sendMessage`, message);
@@ -42,16 +44,31 @@ const Chat = ({ issueId }) => {
     }
   };
 
+  const getMessages = async () => {
+    try {
+      const response = await axiosInstance.get(`/chat/getChatsByIssueId/${issueId}`)
+
+      if (response.data.messages.length > 0) {
+        setMessages(response.data.messages)
+      }
+
+
+      console.log(response)
+
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   useEffect(() => {
+    getMessages()
     getParticipants();
 
     const handleNewMessage = (message) => {
       setMessages((prev) => {
         const oldArray = [...prev];
         oldArray.push(message);
-        console.log(message.text);
-        console.log(prev);
-        // prev.push(message.text);
+        console.log(message);
         return [...oldArray];
       });
     };
@@ -67,14 +84,82 @@ const Chat = ({ issueId }) => {
     };
   }, [issueId]);
 
+
+
+  const formatTimestamp = (timestamp) => {
+    return format(timestamp, "HH:mm");
+  };
+
   return (
     <div className="w-full">
-      <div className="h-[calc(100vh-90px)] w-full">
+      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	">
         {messages.length > 0 ? (
           <div>
-            {messages.map((message, id) => (
-              <div>{message.text}</div>
-            ))}
+            {messages.map((message, id) => {
+              const isCurrentUser =
+                message.senderId === session.data?.user.user._id;
+
+              const hasNextMessageFromSameUser =
+                messages[id + 1]?.senderId === messages[id].senderId;
+              // <div>
+              //   {/* {JSON.stringify(message)} */}
+              //   <span>{message.senderName}: </span>
+              //   <span>{message.text}</span>
+              // </div>
+              return (
+                <div
+                  className={cn("chat-message flex flex-col", {
+                    // "order-1 items-end": isCurrentUser,
+                    // "order-2 items-start": !isCurrentUser,
+                    "order-1 items-end": isCurrentUser,
+                    "order-2 items-start": !isCurrentUser,
+                  })}
+                  // key={`${message.id}-${message.timestamp}`}
+                  key={id}
+                >
+                  <div
+                    className={cn("flex items-end", {
+                      "justify-end": isCurrentUser,
+                    })}
+                  >
+                    <div
+                      className={cn(
+                        "flex flex-col space-y-2 text-base max-w-xs mx-2",
+                        {
+                          "order-1 items-end": isCurrentUser,
+                          "order-2 items-start": !isCurrentUser,
+                        }
+                      )}
+                    >
+                      <span
+                        className={cn("px-4 py-2 rounded-lg inline-block", {
+                          "bg-indigo-600 text-white": isCurrentUser,
+                          "bg-gray-200 text-gray-900": !isCurrentUser,
+                          "rounded-br-none":
+                            !hasNextMessageFromSameUser && isCurrentUser,
+                          "rounded-bl-none":
+                            !hasNextMessageFromSameUser && !isCurrentUser,
+                        })}
+                      >
+                        {message.text}{" "}
+                        <span className="ml-2 text-xs text-gray-400">
+                          {formatTimestamp(message.timestamp)}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={cn("relative h-6", {
+                      "order-2": isCurrentUser,
+                      "order-1": !isCurrentUser,
+                      hidden: hasNextMessageFromSameUser,
+                    })}
+                  >
+                    {message.senderName}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div>No Messages To Show</div>
