@@ -14,32 +14,35 @@ const Chat = ({ issueId }) => {
   const session = useSession();
 
   const [input, setInput] = useState("");
-
   const [messages, setMessages] = useState([]);
+
+  const scrollDownRef = useRef(null);
 
   const sendMessage = async (event) => {
     event.preventDefault();
     if (!input) return;
 
-    if (!issueId) return toast.error('Issue ID missing')
-    if (!session) return toast.error('Session missing')
+    if (!issueId) return toast.error("Issue ID missing");
+    if (!session) return toast.error("Session missing");
 
     try {
-
-      const timestamp = Date.now()
+      const timestamp = Date.now();
 
       const message = {
         text: input,
         senderId: session.data?.user.user._id,
         senderName: session.data?.user.user.name,
         issueId,
-        timestamp
+        timestamp,
       };
 
       await axiosInstance.post(`/chat/sendMessage`, message);
-      await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify(message))
-
-
+      await fetchRedis(
+        "zadd",
+        `chat:${issueId}:messages`,
+        timestamp,
+        JSON.stringify(message)
+      );
 
       setInput("");
     } catch (error) {
@@ -73,16 +76,15 @@ const Chat = ({ issueId }) => {
       if (results) {
         const dbMessages = results.map((message) => JSON.parse(message));
 
-        setMessages(dbMessages)
+        setMessages(dbMessages);
       }
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
   useEffect(() => {
-    getMessages()
+    getMessages();
     // getParticipants();
 
     const handleNewMessage = (message) => {
@@ -92,6 +94,8 @@ const Chat = ({ issueId }) => {
         console.log(message);
         return [...oldArray];
       });
+
+      scrollDownRef.current.focus();
     };
 
     pusherClient.subscribe(issueId);
@@ -105,7 +109,12 @@ const Chat = ({ issueId }) => {
     };
   }, [issueId]);
 
-
+  useEffect(() => {
+    const divUnderMessages = scrollDownRef.current;
+    if (divUnderMessages) {
+      divUnderMessages.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages]);
 
   const formatTimestamp = (timestamp) => {
     return format(timestamp, "HH:mm");
@@ -185,6 +194,7 @@ const Chat = ({ issueId }) => {
         ) : (
           <div>No Messages To Show</div>
         )}
+        <div ref={scrollDownRef} />
       </div>
       <form action="" className="w-full" onSubmit={sendMessage}>
         <input

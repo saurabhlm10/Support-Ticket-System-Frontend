@@ -154,15 +154,18 @@ export default function Home() {
 
 
   useEffect(() => {
-    Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
-      ([openIssues, requestedIssues]) => {
-        openIssues && openIssues.length !== 0 && setOpenItems([...openIssues]);
+    if (session.data) {
 
-        requestedIssues &&
-          requestedIssues.length !== 0 &&
-          setRequestItems([...requestedIssues]);
-      }
-    );
+      Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
+        ([openIssues, requestedIssues]) => {
+          openIssues && openIssues.length !== 0 && setOpenItems([...openIssues]);
+
+          requestedIssues &&
+            requestedIssues.length !== 0 &&
+            setRequestItems([...requestedIssues]);
+        }
+      );
+    }
   }, [session.data?.user]);
 
   return (
