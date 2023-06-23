@@ -47,10 +47,6 @@ const Chat = ({ issueId }) => {
 
   const getMessages = async () => {
     try {
-      // const response = await axiosInstance.get(`/chat/getChatsByIssueId/${issueId}`)
-
-      console.log('getMessages')
-
       const results = await fetchRedis(
         "zrange",
         `chat:${issueId}:messages`,
@@ -59,10 +55,7 @@ const Chat = ({ issueId }) => {
       );
 
       if (results) {
-
         const dbMessages = results.map((message) => JSON.parse(message));
-
-        // return console.log(dbMessages)
 
         setMessages(dbMessages)
       }
