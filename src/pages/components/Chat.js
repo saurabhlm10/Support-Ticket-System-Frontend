@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fetchRedis } from "../../helpers/fetchRedis";
+import { AxiosError } from "axios";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
@@ -20,17 +21,32 @@ const Chat = ({ issueId }) => {
     event.preventDefault();
     if (!input) return;
 
+    if (!issueId) return toast.error('Issue ID missing')
+    if (!session) return toast.error('Session missing')
+
     try {
+
+      const timestamp = Date.now()
+
       const message = {
         text: input,
         senderId: session.data?.user.user._id,
         senderName: session.data?.user.user.name,
         issueId,
+        timestamp
       };
+
       await axiosInstance.post(`/chat/sendMessage`, message);
+      await fetchRedis('zadd', `chat:${issueId}:messages`, timestamp, JSON.stringify(message))
+
+
 
       setInput("");
     } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error("Message Not Sent");
+      }
+
       toast.error("Something Went Wrong");
       console.log(error);
     }
@@ -67,7 +83,7 @@ const Chat = ({ issueId }) => {
 
   useEffect(() => {
     getMessages()
-    getParticipants();
+    // getParticipants();
 
     const handleNewMessage = (message) => {
       setMessages((prev) => {
