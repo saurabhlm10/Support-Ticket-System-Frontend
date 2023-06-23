@@ -7,6 +7,7 @@ import ChatInput from "./ChatInput";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { fetchRedis } from "../../helpers/fetchRedis";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
@@ -46,14 +47,25 @@ const Chat = ({ issueId }) => {
 
   const getMessages = async () => {
     try {
-      const response = await axiosInstance.get(`/chat/getChatsByIssueId/${issueId}`)
+      // const response = await axiosInstance.get(`/chat/getChatsByIssueId/${issueId}`)
 
-      if (response.data.messages.length > 0) {
-        setMessages(response.data.messages)
+      console.log('getMessages')
+
+      const results = await fetchRedis(
+        "zrange",
+        `chat:${issueId}:messages`,
+        0,
+        -1
+      );
+
+      if (results) {
+
+        const dbMessages = results.map((message) => JSON.parse(message));
+
+        // return console.log(dbMessages)
+
+        setMessages(dbMessages)
       }
-
-
-      console.log(response)
 
     } catch (error) {
       console.log(error)
