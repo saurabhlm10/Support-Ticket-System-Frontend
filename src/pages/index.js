@@ -19,7 +19,6 @@ const inter = Inter({ subsets: ["latin"] });
 // const [username, setUsername] = useState("");
 // const [messages, setMessages] = useState([]);
 
-
 // const messageInputRef = useRef();
 
 // useEffect(() => {
@@ -116,8 +115,7 @@ const inter = Inter({ subsets: ["latin"] });
 // }
 
 export default function Home() {
-  const session = useSession()
-
+  const session = useSession();
 
   const [value, setValue] = useState(0);
   const [openItems, setOpenItems] = useState([]);
@@ -134,7 +132,7 @@ export default function Home() {
 
       return response.data.openIssues;
     } catch (error) {
-      toast.error('Cannot Fetch Open Chats')
+      toast.error("Cannot Fetch Open Chats");
       console.log(error);
     }
   };
@@ -147,18 +145,18 @@ export default function Home() {
 
       return response.data.requestedIssues;
     } catch (error) {
-      toast.error('Cannot Fetch Requested Chats')
+      toast.error("Cannot Fetch Requested Chats");
       console.log(error);
     }
   };
 
-
   useEffect(() => {
     if (session.data) {
-
       Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
         ([openIssues, requestedIssues]) => {
-          openIssues && openIssues.length !== 0 && setOpenItems([...openIssues]);
+          openIssues &&
+            openIssues.length !== 0 &&
+            setOpenItems([...openIssues]);
 
           requestedIssues &&
             requestedIssues.length !== 0 &&
@@ -330,13 +328,12 @@ export default function Home() {
                   </div>
                   <p className="text-right">{activeChat.studentEmail}</p>
                 </div>
-                <div className="h-(calc(100vh-56px))">{/* <Chat /> */}
+                <div className="h-(calc(100vh-56px))">
+                  {/* <Chat /> */}
                   <Chat issueId={activeChat.tokenId} />
                 </div>
               </div>
             )}
-
-
           </div>
 
           <div className="col-span-1 bg-pink-100 ">
@@ -351,14 +348,23 @@ export default function Home() {
                   <>
                     <h1>NO-ACCESS</h1>
                     <h1>{activeChat.courseName}</h1>
-                    <img src={`${activeChat.myCoursesScreenshot}`} />
-                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                    <Image
+                      src={activeChat.info?.myCoursesScreenshot}
+                      width={500}
+                      height={500}
+                      alt="Alt Image"
+                    />
+                    <Image
+                      src={activeChat.info?.paymentReceiptScreenshot}
+                      width={500}
+                      height={500}
+                      alt="Alt Image"
+                    />
                   </>
                 )}
                 {activeChat.type == "assignment" && (
                   <>
                     <h1> assignment</h1>
-                    {/* <h1>{JSON.stringify(activeChat)}</h1> */}
                   </>
                 )}
                 {activeChat.type == "batch-change" && (
@@ -366,10 +372,28 @@ export default function Home() {
                     <h1>batch-change</h1>
                     <h1>{activeChat.oldCourseName}</h1>
                     <h1>{activeChat.newCourseName}</h1>
-                    <img src={`${activeChat.paymentReceiptScreenshot}`} />
+                    {/* <Image
+                      src={activeChat.info?.paymentReceiptScreenshot}
+                      width={500}
+                      height={500}
+                      alt="Alt Image"
+                    /> */}
                   </>
                 )}
                 {activeChat.type == "other" && <h1>other</h1>}
+                {activeChat.attachments.length > 0 && <div>Attachments:</div>}
+
+                {activeChat.attachments.length > 0 &&
+                  attachments.map((attachment, id) => (
+                    <></>
+
+                    // <Image
+                    //   src={attachment}
+                    //   width={500}
+                    //   height={500}
+                    //   alt="Alt Image"
+                    // />
+                  ))}
               </>
             )}
           </div>
