@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fetchRedis } from "../../helpers/fetchRedis";
 import { AxiosError } from "axios";
+import Link from "next/link";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
@@ -16,11 +17,14 @@ const Chat = ({ issueId }) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
 
+  const [showFileModal, setShowFileModal] = useState(false);
+
   const scrollDownRef = useRef(null);
   const fileRef = useRef(null);
 
   const sendMessage = async (event) => {
     event.preventDefault();
+    if (showFileModal) return sendFile();
     if (!input) return;
 
     if (!issueId) return toast.error("Issue ID missing");
@@ -58,36 +62,32 @@ const Chat = ({ issueId }) => {
 
   const sendFile = (e) => {
     const reader = new FileReader();
-    reader.readAsDataURL(e.target.files[0]);
+    reader.readAsDataURL(fileRef.current.files[0]);
     reader.onload = async () => {
-      console.log(reader.result)
-      console.log(e.target.files[0].name)
       const formData = new FormData();
 
-      formData.append('file', e.target.files[0])
-      formData.append('filename', e.target.files[0].name)
-      formData.append('issueId', issueId)
-      formData.append('senderId', session.data?.user.user._id)
-      formData.append('senderName', session.data?.user.user.name)
+      formData.append("file", fileRef.current.files[0]);
+      formData.append("filename", fileRef.current.files[0].name);
+      formData.append("issueId", issueId);
+      formData.append("senderId", session.data?.user.user._id);
+      formData.append("senderName", session.data?.user.user.name);
 
       try {
-
-        await axiosInstance.post('/chat/sendFile', formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          })
+        await axiosInstance.post("/chat/sendFile", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
         fileRef.current.value = null;
-
       } catch (error) {
-        console.log(error)
-        toast.error('Something Went Wrong')
+        console.log(error);
+        toast.error("Something Went Wrong");
+      } finally {
+        setShowFileModal(false);
       }
     };
-
-  }
+  };
 
   const getParticipants = async () => {
     try {
@@ -113,7 +113,7 @@ const Chat = ({ issueId }) => {
         setMessages(dbMessages);
       }
     } catch (error) {
-      toast.error('Error Fetching Messages')
+      toast.error("Error Fetching Messages");
       console.log(error);
     }
   };
@@ -154,7 +154,7 @@ const Chat = ({ issueId }) => {
 
   return (
     <div className="w-full">
-      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	">
+      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	border-2 relative">
         {messages.length > 0 ? (
           <div>
             {messages.map((message, id) => {
@@ -195,8 +195,33 @@ const Chat = ({ issueId }) => {
                             !hasNextMessageFromSameUser && !isCurrentUser,
                         })}
                       >
-                        {message.text}{" "}
-                        <span className="ml-2 text-xs text-gray-400">
+                        {"filename" in message ? (
+                          <Link
+                            href={message.path.join("/")}
+                            target="_blank"
+                            className="py-1 text-2xl flex flex-row items-center gap-2"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth="1.5"
+                              stroke="currentColor"
+                              className="w-6 h-6"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+                              />
+                            </svg>
+
+                            {message.filename}
+                          </Link>
+                        ) : (
+                          message.text
+                        )}{" "}
+                        <span className="ml-2 text-xs text-gray-400jscnsjcnc">
                           {formatTimestamp(message.timestamp)}
                         </span>
                       </span>
@@ -214,26 +239,33 @@ const Chat = ({ issueId }) => {
                 </div>
               );
             })}
+            {showFileModal && (
+              <FileModal
+                fileRef={fileRef}
+                setShowFileModal={setShowFileModal}
+              />
+            )}
           </div>
         ) : (
           <div>No Messages To Show</div>
         )}
+
         <div ref={scrollDownRef} />
       </div>
       <form action="" className="w-full flex" onSubmit={sendMessage}>
         {/* <div className="flex"> */}
-
         <input
           value={input}
           type="text"
           className="h-8 flex-1 border-2"
+          disabled={showFileModal}
           onChange={(e) => setInput(e.target.value)}
         />
-        <label className="cursor-pointer w-1/12 md:w-8 flex items-center justify-center bg-blue-300 " >
+        <label className="cursor-pointer w-1/12 md:w-8 flex items-center justify-center bg-blue-300 ">
           <input
             type="file"
             className="hidden "
-            onChange={sendFile}
+            onChange={() => setShowFileModal(true)}
             ref={fileRef}
           />
           <svg
@@ -265,3 +297,43 @@ const Chat = ({ issueId }) => {
 };
 
 export default Chat;
+
+const FileModal = ({ fileRef, setShowFileModal }) => {
+  return (
+    <div className="sticky bottom-0 bg-blue-700 text-white flex flex-row items-center gap-4  w-1/2 py-2 rounded-t-lg text-2xl px-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor"
+        className="w-6 h-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+        />
+      </svg>
+      <div>{fileRef.current.files[0].name}</div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor"
+        className="w-6 h-6 ml-auto cursor-pointer"
+        onClick={() => {
+          fileRef.current.value = null;
+          setShowFileModal(false);
+        }}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+    </div>
+  );
+};
