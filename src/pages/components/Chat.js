@@ -8,8 +8,9 @@ import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fetchRedis } from "../../helpers/fetchRedis";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import Link from "next/link";
+import fileDownload from "js-file-download";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
@@ -21,6 +22,7 @@ const Chat = ({ issueId }) => {
 
   const scrollDownRef = useRef(null);
   const fileRef = useRef(null);
+  const sendButtonRef = useRef(null);
 
   const sendMessage = async (event) => {
     event.preventDefault();
@@ -42,12 +44,12 @@ const Chat = ({ issueId }) => {
       };
 
       await axiosInstance.post(`/chat/sendMessage`, message);
-      await fetchRedis(
-        "zadd",
-        `chat:${issueId}:messages`,
-        timestamp,
-        JSON.stringify(message)
-      );
+      // await fetchRedis(
+      //   "zadd",
+      //   `chat:${issueId}:messages`,
+      //   timestamp,
+      //   JSON.stringify(message)
+      // );
 
       setInput("");
     } catch (error) {
@@ -71,6 +73,7 @@ const Chat = ({ issueId }) => {
       formData.append("issueId", issueId);
       formData.append("senderId", session.data?.user.user._id);
       formData.append("senderName", session.data?.user.user.name);
+      formData.append("timestamp", Date.now());
 
       try {
         await axiosInstance.post("/chat/sendFile", formData, {
@@ -125,7 +128,6 @@ const Chat = ({ issueId }) => {
       setMessages((prev) => {
         const oldArray = [...prev];
         oldArray.push(message);
-        console.log(message);
         return [...oldArray];
       });
     };
@@ -138,6 +140,8 @@ const Chat = ({ issueId }) => {
       pusherClient.unbind("incoming-message", handleNewMessage);
       setMessages([]);
       setInput("");
+      setShowFileModal(false)
+      
     };
   }, [issueId]);
 
@@ -152,9 +156,20 @@ const Chat = ({ issueId }) => {
     return format(timestamp, "HH:mm");
   };
 
+  // const handleDownload = (url, filename) => {
+  //   console.log(url);
+  //   axios
+  //     .get(url, {
+  //       responseType: "blob",
+  //     })
+  //     .then((res) => {
+  //       fileDownload(res.data, filename);
+  //     });
+  // };
+
   return (
     <div className="w-full">
-      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	border-2 relative">
+      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	border-2 border-black">
         {messages.length > 0 ? (
           <div>
             {messages.map((message, id) => {
@@ -196,28 +211,55 @@ const Chat = ({ issueId }) => {
                         })}
                       >
                         {"filename" in message ? (
-                          <Link
-                            href={message.path.join("/")}
-                            target="_blank"
-                            className="py-1 text-2xl flex flex-row items-center gap-2"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              strokeWidth="1.5"
-                              stroke="currentColor"
-                              className="w-6 h-6"
+                          <div className="flex flex-row items-center gap-3">
+                            <Link
+                              href={message.path.join("/")}
+                              download
+                              target="_blank"
+                              className="py-1 text-2xl flex flex-row items-center gap-2"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
-                              />
-                            </svg>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="w-6 h-6"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+                                />
+                              </svg>
 
-                            {message.filename}
-                          </Link>
+                              {message.filename}
+                            </Link>
+                            {/* <button
+                              className="border-2 rounded-full p-1"
+                              onClick={() => {
+                                handleDownload(
+                                  message.path.join("/"),
+                                  message.filename
+                                );
+                              }}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="1.5"
+                                stroke="currentColor"
+                                class="w-6 h-6"
+                              >
+                                <path
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                                />
+                              </svg>
+                            </button> */}
+                          </div>
                         ) : (
                           message.text
                         )}{" "}
@@ -239,17 +281,13 @@ const Chat = ({ issueId }) => {
                 </div>
               );
             })}
-            {showFileModal && (
-              <FileModal
-                fileRef={fileRef}
-                setShowFileModal={setShowFileModal}
-              />
-            )}
           </div>
         ) : (
           <div>No Messages To Show</div>
         )}
-
+        {showFileModal && (
+          <FileModal fileRef={fileRef} setShowFileModal={setShowFileModal} />
+        )}
         <div ref={scrollDownRef} />
       </div>
       <form action="" className="w-full flex" onSubmit={sendMessage}>
@@ -265,7 +303,10 @@ const Chat = ({ issueId }) => {
           <input
             type="file"
             className="hidden "
-            onChange={() => setShowFileModal(true)}
+            onChange={() => {
+              setShowFileModal(true);
+              sendButtonRef.current.focus();
+            }}
             ref={fileRef}
           />
           <svg
@@ -287,7 +328,8 @@ const Chat = ({ issueId }) => {
 
         <button
           type="submit"
-          className="h-8 px-5 bg-black text-white border-2 border-black"
+          className="h-8 px-5 bg-black text-white border-2 border-black outline-double"
+          ref={sendButtonRef}
         >
           Send
         </button>
@@ -300,40 +342,43 @@ export default Chat;
 
 const FileModal = ({ fileRef, setShowFileModal }) => {
   return (
-    <div className="sticky bottom-0 bg-blue-700 text-white flex flex-row items-center gap-4  w-1/2 py-2 rounded-t-lg text-2xl px-2">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="1.5"
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
-        />
-      </svg>
-      <div>{fileRef.current.files[0].name}</div>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth="1.5"
-        stroke="currentColor"
-        className="w-6 h-6 ml-auto cursor-pointer"
-        onClick={() => {
-          fileRef.current.value = null;
-          setShowFileModal(false);
-        }}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
+    <div className="fixed bottom-0 border-2 border-yellow-300 bg-blue-700 text-white w-1/2 rounded-t-lg p-2">
+      <div className="flex flex-row items-center gap-4 text-2xl pb-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="w-6 h-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+          />
+        </svg>
+        <div>{fileRef.current.files[0].name}</div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="1.5"
+          stroke="currentColor"
+          className="w-6 h-6 ml-auto cursor-pointer"
+          onClick={() => {
+            fileRef.current.value = null;
+            setShowFileModal(false);
+          }}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <div className="text-xs">* We Recommend Using Videos and Images</div>
     </div>
   );
 };

@@ -21,6 +21,7 @@
     "eslint": "8.36.0",
     "eslint-config-next": "13.2.4",
     "http-proxy-middleware": "^2.0.6",
+    "js-file-download": "^0.4.12",
     "next": "^13.4.3",
     "next-auth": "^4.22.1",
     "pusher-js": "^8.2.0",
