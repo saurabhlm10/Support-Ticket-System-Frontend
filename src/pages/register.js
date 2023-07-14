@@ -6,24 +6,25 @@ import { Domains, Roles } from "@/constant";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/models/registerSchema";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useRouter } from "next/router";
 import { axiosInstance } from "@/axios";
 import { toast } from "react-hot-toast";
 import { setId } from "@/redux/features/mainSlice";
 import { useDispatch } from "react-redux";
 import { signIn } from "next-auth/react";
-
-// axios.defaults.baseURL = process.env.SERVER_URL
+import LoadingIcon from 'public/icons/loading.svg'
+import Image from "next/image";
 
 
 function Register() {
+  const [isLoading, setIsLoading] = useState(false)
 
-  const dispatch = useDispatch()
   const router = useRouter();
 
   const onRegister = async (data) => {
     try {
+      setIsLoading(true)
       const response = await axiosInstance.post("/auth/register", data);
 
       return await signIn("credentials", {
@@ -31,17 +32,23 @@ function Register() {
         password: data.password,
         redirect: false,
       }).then(({ ok, error }) => {
+        setIsLoading(false)
         if (ok) {
           router.push("/");
         } else {
-          return toast.error(error)
+          // return toast.error(error)
         }
       })
 
       // return router.push(`/profile/${response.data.id}`);
     } catch (error) {
-      console.log(error);
-      toast.error(error.message)
+      setIsLoading(false)
+      if(error instanceof AxiosError){
+        return toast.error(error.response.data.message)
+      } 
+      if(error instanceof Error){
+        return toast.error(error.message)
+      }
     }
   };
 
@@ -157,7 +164,11 @@ function Register() {
           </div>
           <div className="mt-6">
             <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
-              Register
+              {isLoading ?
+                <div className='grid place-content-center '>
+                  <Image className='animate-spin text-white fill-white' src={LoadingIcon} width={24} height={24} />
+                </div>
+                : 'Register'}
             </button>
           </div>
         </form>

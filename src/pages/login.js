@@ -6,26 +6,34 @@ import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { signIn } from "next-auth/react";
 import { toast } from 'react-hot-toast';
+import LoadingIcon from 'public/icons/loading.svg'
+import Image from 'next/image';
 
 
 function Login() {
-
+    const [isLoading, setIsLoading] = useState(false)
     const router = useRouter()
 
     const onLogin = async (data) => {
+        setIsLoading(true)
+
         signIn("credentials", {
             email: data.email,
             password: data.password,
             redirect: false,
         }).then(({ ok, error }) => {
+            setIsLoading(false)
+
             if (ok) {
                 router.push("/");
-            } else {
-                return toast.error(error)
+            } else { 
+                if(error instanceof Error){
+                    return toast.error(error.message)
+                }
+                toast.error(error)
+                // console.log(error)
             }
         })
-
-
     }
 
 
@@ -38,6 +46,11 @@ function Login() {
 
     return (
         <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
+            <div className='text-center border-2 border-red-600 text-2xl '>
+                <p>
+                    Render Free instance types spin down with inactivity. So please wait a few moments for the backend to response when you load this app after a gap.
+                </p>
+            </div>
             <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-xl">
                 <h1 className="text-3xl font-semibold text-center text-purple-700 underline">
                     Sign in
@@ -87,7 +100,12 @@ function Login() {
                     </a>
                     <div className="mt-6">
                         <button className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600">
-                            Login
+                            {isLoading ?
+                                <div className='grid place-content-center '>
+                                    <Image className='animate-spin text-white fill-white' src={LoadingIcon} width={24} height={24} />
+                                </div>
+                                : 'Login'}
+
                         </button>
                     </div>
                 </form>
@@ -103,7 +121,7 @@ function Login() {
                     </Link>
                 </p>
             </div>
-        </div>
+        </div >
     );
 }
 

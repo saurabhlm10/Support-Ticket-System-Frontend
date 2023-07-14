@@ -1,11 +1,23 @@
 import ReactNode, { useEffect, useRef, useState } from "react";
 import { courses } from "../courses";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { Autocomplete, TextField } from "@mui/material";
 import Head from "next/head";
 import { axiosInstance } from "@/axios";
+import { useRouter } from "next/router";
+
+import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
+import LoadingIcon from "public/icons/loading.svg";
+import Image from "next/image";
 
 const create = () => {
+  const router = useRouter();
+
+  const session = useSession();
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [handlersArray, setHandlersArray] = useState([]);
   const [allHandlersList, setAllHandlersList] = useState([]);
   const [linkToggler, setLinkToggler] = useState("Link");
@@ -71,7 +83,10 @@ const create = () => {
   // Other(Issue Type) Error Fields
   const [titleErrorMessage, setTitleErrorMessage] = useState("default");
 
+  if (!session) return <h1>Loading</h1>;
+
   const createTicket = async () => {
+    setIsLoading(true);
     // Handle Missing Fields
 
     if (!studentName) {
@@ -132,6 +147,7 @@ const create = () => {
             setPaymenReceiptErrorMessage(
               "Please Add A Valid Payment Receipt Link"
             );
+            return setIsLoading(false);
           }
         } else {
           if (!paymentReceipt) {
@@ -139,9 +155,10 @@ const create = () => {
             setPaymenReceiptErrorMessage(
               "Please Add A Payment Receipt Attachment"
             );
+            return setIsLoading(false);
           }
         }
-        return;
+        break;
       }
 
       case "Batch-Change": {
@@ -151,6 +168,7 @@ const create = () => {
             "Please Select A Course From The List"
           );
           setBatchChangePrevCourseName("");
+          return setIsLoading(false);
         }
 
         if (!courses.includes(batchChangeNewCourseName)) {
@@ -159,6 +177,7 @@ const create = () => {
             "Please Select A Course From The List"
           );
           setBatchChangeNewCourseName("");
+          return setIsLoading(false);
         }
 
         if (
@@ -169,6 +188,7 @@ const create = () => {
           setBatchChangeNewCourseNameErrorMessage(
             "New Course Must Not Be The Same As Previous Course"
           );
+          return setIsLoading(false);
         }
 
         if (linkToggler === "Link") {
@@ -181,16 +201,18 @@ const create = () => {
             setPaymenReceiptErrorMessage(
               "Please Add A Valid Payment Receipt Link"
             );
+            return setIsLoading(false);
           }
         } else {
           if (!paymentReceipt) {
             setMissingFields((prev) => [...prev, "paymentReceipt"]);
             setPaymenReceiptErrorMessage(
               "Please Add A Payment Receipt Attachment"
-            ); 
+            );
+            return setIsLoading(false);
           }
         }
-        return;
+        break;
       }
 
       case "Assignment": {
@@ -198,14 +220,16 @@ const create = () => {
           setMissingFields((prev) => [...prev, "description"]);
           setDescriptionErrorMessage("Please Add A Description");
         }
-        return;
+        return setIsLoading(false);
+        break;
       }
       case "Other": {
         if (!title) {
           setMissingFields((prev) => [...prev, "title"]);
           setTitleErrorMessage("Please Add A Title");
         }
-        return;
+        return setIsLoading(false);
+        break;
       }
     }
 
@@ -215,7 +239,8 @@ const create = () => {
 
     switch (issueType) {
       case "No-Access": {
-        if (linkToggler !== "Link") formData.append("paymentReceiptImage", paymentReceipt);
+        if (linkToggler !== "Link")
+          formData.append("paymentReceiptImage", paymentReceipt);
 
         info = {
           courseName: noAccessCourseName,
@@ -260,7 +285,7 @@ const create = () => {
         studentName,
         studentEmail,
         studentPhone,
-        raiser: "648aa701c16fa669d26216df",
+        raiser: session.data?.user.user._id,
         potentialHandlers:
           handlersArray.length > 1
             ? handlersArray.map((handler) => handler._id)
@@ -270,10 +295,10 @@ const create = () => {
         description,
         // attachments,
       };
+
       formData.append("options", JSON.stringify(options));
 
       // formData.append('attachmentInput', attachments)
-
 
       const response = await axiosInstance.post(
         `/issue/raiseIssue/${issueType.toLowerCase()}`,
@@ -285,8 +310,17 @@ const create = () => {
         }
       );
 
+      router.push("/");
     } catch (error) {
       console.log(error);
+      if (error instanceof AxiosError) {
+        toast.error(error.response.data.message);
+      }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -305,6 +339,13 @@ const create = () => {
 
       setAllHandlersList([...tempSpecialHandlersList, ...restHandlersList]);
     } catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response.data.message);
+      }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+
       console.log(error);
     }
   };
@@ -312,6 +353,10 @@ const create = () => {
   useEffect(() => {
     getAllAgents();
     setIssueType("No-Access");
+
+    return () => {
+      setIsLoading(false);
+    };
   }, []);
 
   useEffect(() => {
@@ -355,10 +400,8 @@ const create = () => {
         <div className="flex justify-evenly ">
           <div className="flex flex-col gap-4 w-6/12">
             <h1 className="text-3xl ">Student Details</h1>
-            <div className="mt-4 w-full border-2 flex justify-between">
-              <label htmlFor="studentName" className="border-2">
-                Student Name
-              </label>
+            <div className="mt-4 w-full  flex justify-between">
+              <label htmlFor="studentName">Student Name</label>
               <div className="w-2/3">
                 <input
                   type="text"
@@ -386,7 +429,7 @@ const create = () => {
                 </p>
               </div>
             </div>
-            <div className="w-full border-2 flex justify-between">
+            <div className="w-full flex justify-between">
               <label htmlFor="studentEmail">Student Email</label>
               <div className="w-2/3">
                 <input
@@ -416,7 +459,7 @@ const create = () => {
               </div>
             </div>
 
-            <div className="w-full border-2 flex justify-between">
+            <div className="w-full  flex justify-between">
               <label htmlFor="studentPhone">Student Phone</label>
               <div className=" w-2/3">
                 <input
@@ -446,7 +489,7 @@ const create = () => {
               </div>
             </div>
 
-            <div className="w-full border-2 flex justify-between">
+            <div className="w-full flex justify-between">
               <label htmlFor="issueType">Issue Type</label>
 
               <select
@@ -468,7 +511,7 @@ const create = () => {
 
             {issueType === "No-Access" && (
               <>
-                <div className="w-full border-2 flex justify-between">
+                <div className="w-full  flex justify-between">
                   <label htmlFor="courseList">Course Name</label>
 
                   <div className="w-2/3">
@@ -529,7 +572,7 @@ const create = () => {
 
                 {linkToggler === "Link" ? (
                   <>
-                    <div className="w-full border-2 flex justify-between">
+                    <div className="w-full  flex justify-between">
                       <label htmlFor="paymentReceiptLink">
                         Payment Reciept
                       </label>
@@ -562,7 +605,7 @@ const create = () => {
                     </div>
                   </>
                 ) : (
-                  <div className="w-full border-2 flex justify-between">
+                  <div className="w-full  flex justify-between">
                     <label htmlFor="paymentReceiptImage">Payment Reciept</label>
                     <div className="w-2/3">
                       <div className="border-2  flex flex-row justify-between">
@@ -617,7 +660,7 @@ const create = () => {
 
             {issueType === "Batch-Change" && (
               <>
-                <div className="w-full border-2 flex justify-between">
+                <div className="w-full  flex justify-between">
                   <label htmlFor="courseList">Previous Course Name</label>
 
                   <div className="w-2/3">
@@ -652,7 +695,7 @@ const create = () => {
                   </div>
                 </div>
 
-                <div className="w-full border-2 flex justify-between">
+                <div className="w-full  flex justify-between">
                   <label htmlFor="courseList">New Course Name</label>
                   <div className="w-2/3">
                     <input
@@ -858,7 +901,7 @@ const create = () => {
             )}
 
             <div>
-              <div className="w-full border-2 flex justify-between">
+              <div className="w-full  flex justify-between">
                 <label htmlFor="handler">Handler</label>
                 <div className="flex flex-col w-2/3">
                   <Autocomplete
@@ -934,7 +977,7 @@ const create = () => {
                 </div>
               </div>
             </div>
-            <div className="w-full border-2 flex justify-between">
+            <div className="w-full flex justify-between">
               <h1>Attachments</h1>
               <div className="w-2/3 ">
                 <div className="flex flex-col  gap-1">
@@ -1008,10 +1051,21 @@ const create = () => {
           </div>
         </div>
         <button
-          className="border-2 float-right	mr-20 px-3 py-2"
+          className="border-2 float-right	mr-20 px-3 py-2 bg-black text-white"
           onClick={createTicket}
         >
-          Create Ticket
+          {isLoading ? (
+            <div className="grid place-content-center ">
+              <Image
+                className="animate-spin text-white fill-white"
+                src={LoadingIcon}
+                width={24}
+                height={24}
+              />
+            </div>
+          ) : (
+            "Create Ticket"
+          )}
         </button>
       </div>
     </>

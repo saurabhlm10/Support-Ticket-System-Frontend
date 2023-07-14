@@ -1,22 +1,22 @@
 import { axiosInstance } from "@/axios";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import { notFound } from "next/navigation";
 import { pusherClient } from "@/lib/pusher";
-import ChatInput from "./ChatInput";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fetchRedis } from "../../helpers/fetchRedis";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import Link from "next/link";
-import fileDownload from "js-file-download";
+import LoadingIcon from "public/icons/loading.svg";
+import Image from "next/image";
 
 const Chat = ({ issueId }) => {
   const session = useSession();
 
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [showFileModal, setShowFileModal] = useState(false);
 
@@ -26,6 +26,7 @@ const Chat = ({ issueId }) => {
 
   const sendMessage = async (event) => {
     event.preventDefault();
+
     if (showFileModal) return sendFile();
     if (!input) return;
 
@@ -63,6 +64,7 @@ const Chat = ({ issueId }) => {
   };
 
   const sendFile = (e) => {
+    setIsLoading(true);
     const reader = new FileReader();
     reader.readAsDataURL(fileRef.current.files[0]);
     reader.onload = async () => {
@@ -87,6 +89,7 @@ const Chat = ({ issueId }) => {
         console.log(error);
         toast.error("Something Went Wrong");
       } finally {
+        setIsLoading(false);
         setShowFileModal(false);
       }
     };
@@ -140,8 +143,7 @@ const Chat = ({ issueId }) => {
       pusherClient.unbind("incoming-message", handleNewMessage);
       setMessages([]);
       setInput("");
-      setShowFileModal(false)
-      
+      setShowFileModal(false);
     };
   }, [issueId]);
 
@@ -156,20 +158,9 @@ const Chat = ({ issueId }) => {
     return format(timestamp, "HH:mm");
   };
 
-  // const handleDownload = (url, filename) => {
-  //   console.log(url);
-  //   axios
-  //     .get(url, {
-  //       responseType: "blob",
-  //     })
-  //     .then((res) => {
-  //       fileDownload(res.data, filename);
-  //     });
-  // };
-
   return (
     <div className="w-full">
-      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	border-2 border-black">
+      <div className="h-[calc(100vh-90px)] w-full overflow-y-scroll	border-2">
         {messages.length > 0 ? (
           <div>
             {messages.map((message, id) => {
@@ -331,7 +322,18 @@ const Chat = ({ issueId }) => {
           className="h-8 px-5 bg-black text-white border-2 border-black outline-double"
           ref={sendButtonRef}
         >
-          Send
+          {isLoading ? (
+            <div className="grid place-content-center ">
+              <Image
+                className="animate-spin text-white fill-white"
+                src={LoadingIcon}
+                width={24}
+                height={24}
+              />
+            </div>
+          ) : (
+            "Send"
+          )}
         </button>
       </form>
     </div>

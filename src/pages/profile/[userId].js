@@ -2,13 +2,18 @@ import { axiosInstance } from "@/axios";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import LoadingIcon from 'public/icons/loading.svg'
+import Image from 'next/image';
+
 
 const User = () => {
   const session = useSession()
+  const [isLoading, setIsLoading] = useState(false)
+
 
   const router = useRouter();
   const [user, setUser] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   const getAgent = async () => {
     try {
@@ -16,7 +21,7 @@ const User = () => {
         `/agent/getAgent/${router.query.userId}`
       );
       setUser(response.data.agent);
-      setIsLoading(false);
+      setIsPageLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -24,9 +29,15 @@ const User = () => {
 
   useEffect(() => {
     getAgent();
+    () => {
+      setIsLoading(false)
+    }
   }, [router.query.userId]);
 
-  if (isLoading) return <div>Loading</div>;
+  if (isPageLoading) return
+  <div className='grid place-content-center '>
+    <Image className='animate-spin text-white fill-white' src={LoadingIcon} width={24} height={24} />
+  </div>
 
   return (
     <>
@@ -85,9 +96,18 @@ const User = () => {
 
         <div className="fixed bottom-6 right-6">
           <button className="px-4 py-3 border-none bg-blue-600 text-white rounded-md"
-            onClick={async () => await signOut()}
+            onClick={async () => {
+              setIsLoading(true)
+              await signOut()
+              setIsLoading(false)
+            }}
           >
-            Sign Out
+            {isLoading ?
+              <div className='grid place-content-center '>
+                <Image className='animate-spin text-white fill-white' src={LoadingIcon} width={24} height={24} />
+              </div>
+              : 'Sign Out'}
+
           </button>
         </div>
       )}
