@@ -45,7 +45,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (session.data) {
+    console.log(session.data)
+    if (session.data?.user.user._id) {
       Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
         ([openIssues, requestedIssues]) => {
           openIssues &&
@@ -59,6 +60,8 @@ export default function Home() {
       );
     }
   }, [session.data?.user]);
+
+  if(!session) return <h1>Loading</h1>
 
   return (
     <>
@@ -76,7 +79,7 @@ export default function Home() {
         </div>
 
         <div className="fixed bottom-3 left-3 px-3 py-4 border-2 border-black bg-white">
-          <Link href={`/create`}>Raise</Link>
+          <Link href={`/raise`}>Raise</Link>
         </div>
 
         <div className="grid grid-cols-5 h-screen ">

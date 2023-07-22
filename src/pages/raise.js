@@ -97,12 +97,144 @@ const create = () => {
     resolver: zodResolver(issueSchema),
   });
 
+  let moveAhead = true;
+
   const createTicket = async (data) => {
     setIsLoading(true);
 
-    console.log(data);
+    if (handlersArray.length === 0) {
+      setMissingFields((prev) => [...prev, "handlers"]);
+      return setIsLoading(false);
+    }
 
-    return setIsLoading(false);
+    // Check Errors in Issue Specific fields
+
+    switch (issueType) {
+      case "No-Access": {
+        if (!courses.includes(noAccessCourseName)) {
+          setMissingFields((prev) => [...prev, "noAccessCourseName"]);
+          setNoAccessCourseNameErrorMessage(
+            "Please Select A Course From The List"
+          );
+          setNoAccessCourseName("");
+          moveAhead = false;
+        }
+
+        if (linkToggler === "Link") {
+          const paymentReceiptRegex = new RegExp(
+            /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?$/i
+          );
+
+          if (!paymentReceiptRegex.test(paymentReceipt)) {
+            setMissingFields((prev) => [...prev, "paymentReceipt"]);
+            setPaymenReceiptErrorMessage(
+              "Please Add A Valid Payment Receipt Link"
+            );
+            moveAhead = false;
+
+            return setIsLoading(false);
+          }
+        } else {
+          if (!paymentReceipt) {
+            setMissingFields((prev) => [...prev, "paymentReceipt"]);
+            setPaymenReceiptErrorMessage(
+              "Please Add A Payment Receipt Attachment"
+            );
+            moveAhead = false;
+
+            return setIsLoading(false);
+          }
+        }
+        break;
+      }
+
+      case "Batch-Change": {
+        if (!courses.includes(batchChangePrevCourseName)) {
+          setMissingFields((prev) => [...prev, "batchChangePrevCourseName"]);
+          setBatchChangePrevCourseNameErrorMessage(
+            "Please Select A Course From The List"
+          );
+          setBatchChangePrevCourseName("");
+          moveAhead = false;
+
+          return setIsLoading(false);
+        }
+
+        if (!courses.includes(batchChangeNewCourseName)) {
+          setMissingFields((prev) => [...prev, "batchChangeNewCourseName"]);
+          setBatchChangeNewCourseNameErrorMessage(
+            "Please Select A Course From The List"
+          );
+          setBatchChangeNewCourseName("");
+          moveAhead = false;
+
+          return setIsLoading(false);
+        }
+
+        if (
+          batchChangePrevCourseName &&
+          batchChangePrevCourseName === batchChangeNewCourseName
+        ) {
+          setMissingFields((prev) => [...prev, "batchChangeNewCourseName"]);
+          setBatchChangeNewCourseNameErrorMessage(
+            "New Course Must Not Be The Same As Previous Course"
+          );
+          moveAhead = false;
+
+          return setIsLoading(false);
+        }
+
+        if (linkToggler === "Link") {
+          const paymentReceiptRegex = new RegExp(
+            /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?$/i
+          );
+
+          if (!paymentReceiptRegex.test(paymentReceipt)) {
+            setMissingFields((prev) => [...prev, "paymentReceipt"]);
+            setPaymenReceiptErrorMessage(
+              "Please Add A Valid Payment Receipt Link"
+            );
+            moveAhead = false;
+
+            return setIsLoading(false);
+          }
+        } else {
+          if (!paymentReceipt) {
+            setMissingFields((prev) => [...prev, "paymentReceipt"]);
+            setPaymenReceiptErrorMessage(
+              "Please Add A Payment Receipt Attachment"
+            );
+            moveAhead = false;
+
+            return setIsLoading(false);
+          }
+        }
+        break;
+      }
+
+      case "Assignment": {
+        if (!assignmentNotChecked) {
+          setMissingFields((prev) => [...prev, "description"]);
+          setDescriptionErrorMessage("Please Add A Description");
+          moveAhead = false;
+
+          return setIsLoading(false);
+        }
+        break;
+      }
+      case "Other": {
+        if (!title) {
+          setMissingFields((prev) => [...prev, "title"]);
+          setTitleErrorMessage("Please Add A Title");
+          moveAhead = false;
+
+          return setIsLoading(false);
+        }
+        break;
+      }
+    }
+
+    if (!moveAhead) return setIsLoading(false);
 
     let info;
 
@@ -168,8 +300,6 @@ const create = () => {
       };
 
       formData.append("options", JSON.stringify(options));
-
-      // formData.append('attachmentInput', attachments)
 
       const response = await axiosInstance.post(
         `/issue/raiseIssue/${issueType.toLowerCase()}`,
@@ -323,7 +453,7 @@ const create = () => {
               <div className=" w-2/3">
                 <input
                   {...register("studentPhone")}
-                  type="number"
+                  type="text"
                   name="studentPhone"
                   className="border-2 w-full"
                   value={studentPhone}
@@ -373,6 +503,12 @@ const create = () => {
                       className="border-2 w-full"
                       value={noAccessCourseName}
                       onChange={(e) => {
+                        setMissingFields((prev) => {
+                          const filteredMissingFields = prev.filter(
+                            (field) => field !== "noAccessCourseName"
+                          );
+                          return [...filteredMissingFields];
+                        });
                         setNoAccessCourseName(e.target.value);
                       }}
                     />
@@ -400,6 +536,12 @@ const create = () => {
                   <p
                     className="cursor-pointer text-sm text-blue-500 inline-block"
                     onClick={() => {
+                      setMissingFields((prev) => {
+                        const filteredMissingFields = prev.filter(
+                          (field) => field !== "paymentReceipt"
+                        );
+                        return [...filteredMissingFields];
+                      });
                       linkToggler === "Link"
                         ? setLinkToggler("Images")
                         : setLinkToggler("Link");
@@ -424,6 +566,12 @@ const create = () => {
                           className="border-2 w-full"
                           value={paymentReceipt}
                           onChange={(e) => {
+                            setMissingFields((prev) => {
+                              const filteredMissingFields = prev.filter(
+                                (field) => field !== "paymentReceipt"
+                              );
+                              return [...filteredMissingFields];
+                            });
                             setPaymentReceipt(e.target.value);
                           }}
                         />
@@ -450,6 +598,12 @@ const create = () => {
                           name="paymentReceiptImage"
                           className=""
                           onChange={(e) => {
+                            setMissingFields((prev) => {
+                              const filteredMissingFields = prev.filter(
+                                (field) => field !== "paymentReceipt"
+                              );
+                              return [...filteredMissingFields];
+                            });
                             setRemovePaymentReceipt(true);
                             setPaymentReceipt(e.target.files[0]);
                           }}
@@ -498,6 +652,12 @@ const create = () => {
                       className="border-2 w-full"
                       value={batchChangePrevCourseName}
                       onChange={(e) => {
+                        setMissingFields((prev) => {
+                          const filteredMissingFields = prev.filter(
+                            (field) => field !== "batchChangePrevCourseName"
+                          );
+                          return [...filteredMissingFields];
+                        });
                         setBatchChangePrevCourseName(e.target.value);
                       }}
                     />
@@ -526,6 +686,12 @@ const create = () => {
                       className="border-2 w-full"
                       value={batchChangeNewCourseName}
                       onChange={(e) => {
+                        setMissingFields((prev) => {
+                          const filteredMissingFields = prev.filter(
+                            (field) => field !== "batchChangeNewCourseName"
+                          );
+                          return [...filteredMissingFields];
+                        });
                         setBatchChangeNewCourseName(e.target.value);
                       }}
                     />
@@ -554,6 +720,12 @@ const create = () => {
                   <p
                     className="cursor-pointer text-sm text-blue-500 inline-block"
                     onClick={() => {
+                      setMissingFields((prev) => {
+                        const filteredMissingFields = prev.filter(
+                          (field) => field !== "paymentReceipt"
+                        );
+                        return [...filteredMissingFields];
+                      });
                       linkToggler === "Link"
                         ? setLinkToggler("Image")
                         : setLinkToggler("Link");
@@ -567,7 +739,7 @@ const create = () => {
 
                 {linkToggler === "Link" ? (
                   <>
-                    <div className="w-full border-2 flex justify-between">
+                    <div className="w-full flex justify-between">
                       <label htmlFor="paymentReceiptLink">
                         Payment Reciept
                       </label>
@@ -578,6 +750,12 @@ const create = () => {
                           name="paymentReceiptLink"
                           className="border-2 w-full"
                           onChange={(e) => {
+                            setMissingFields((prev) => {
+                              const filteredMissingFields = prev.filter(
+                                (field) => field !== "paymentReceipt"
+                              );
+                              return [...filteredMissingFields];
+                            });
                             setPaymentReceipt(e.target.value);
                           }}
                         />
@@ -607,6 +785,12 @@ const create = () => {
                             name="paymentReceiptImage"
                             className=""
                             onChange={(e) => {
+                              setMissingFields((prev) => {
+                                const filteredMissingFields = prev.filter(
+                                  (field) => field !== "paymentReceipt"
+                                );
+                                return [...filteredMissingFields];
+                              });
                               setRemovePaymentReceipt(true);
                               setPaymentReceipt(e.target.files[0]);
                             }}
@@ -615,6 +799,12 @@ const create = () => {
                             <button
                               className="text-red-700"
                               onClick={() => {
+                                setMissingFields((prev) => {
+                                  const filteredMissingFields = prev.filter(
+                                    (field) => field !== "paymentReceipt"
+                                  );
+                                  return [...filteredMissingFields];
+                                });
                                 setRemovePaymentReceipt(false);
                                 paymentReceiptImageInputRef.current.value =
                                   null;
@@ -673,6 +863,12 @@ const create = () => {
                     name="issueTitle"
                     className="border-2 w-full"
                     onChange={(e) => {
+                      setMissingFields((prev) => {
+                        const filteredMissingFields = prev.filter(
+                          (field) => field !== "title"
+                        );
+                        return [...filteredMissingFields];
+                      });
                       setTitle(e.target.value);
                     }}
                   />
@@ -691,14 +887,14 @@ const create = () => {
               <div className="w-full  flex justify-between">
                 <label htmlFor="handler">Handler</label>
                 <div className="flex flex-col w-2/3">
-                  <input
+                  {/* <input
                     {...register("handlers")}
                     type="text"
                     value={handlersArray}
                     className="hidden"
                     id="handlers"
                     readOnly
-                  />
+                  /> */}
                   <Autocomplete
                     // value={JSON.stringify(['hello']) || ''}
                     options={allHandlersList}
@@ -707,6 +903,12 @@ const create = () => {
                       <li
                         key={option._id}
                         onClick={() => {
+                          setMissingFields((prev) => {
+                            const filteredMissingFields = prev.filter(
+                              (field) => field !== "handlers"
+                            );
+                            return [...filteredMissingFields];
+                          });
                           setHandlersArray((prev) => [...prev, option]);
                           const filteredAllHandlersList =
                             allHandlersList.filter(
@@ -756,12 +958,12 @@ const create = () => {
                       ))}
                     <p
                       className={`text-xs text-red-700 ${
-                        errors.handlers ? "block" : "invisible"
+                        missingFields.includes("handlers")
+                          ? "block"
+                          : "invisible"
                       }`}
                     >
-                      {errors.handlers ? errors.handlers.message : "default"}
-
-                      {/* Please Select Atleast One Handler */}
+                      Select Atleast One Handler From The List
                     </p>
                   </div>
                 </div>
@@ -822,6 +1024,12 @@ const create = () => {
               rows="10"
               className="border-2"
               onChange={(e) => {
+                setMissingFields((prev) => {
+                  const filteredMissingFields = prev.filter(
+                    (field) => field !== "description"
+                  );
+                  return [...filteredMissingFields];
+                });
                 setDescription(e.target.value);
               }}
             />
