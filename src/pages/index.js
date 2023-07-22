@@ -215,7 +215,7 @@ export default function Home() {
             </div> */}
           <div className="col-span-3 h-screen">
             {Object.keys(activeChat).length === 0 ? (
-              <div>Nothing</div>
+              <div>Select A Chat</div>
             ) : (
               <div>
                 <div className="bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0">
