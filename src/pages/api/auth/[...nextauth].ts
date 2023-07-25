@@ -1,8 +1,7 @@
 import { axiosInstance } from "@/axios";
+import { AxiosError } from "axios";
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { useRouter } from "next/router";
-import { toast } from "react-hot-toast";
 
 export default NextAuth({
   providers: [
@@ -20,9 +19,9 @@ export default NextAuth({
       async authorize(credentials, req) {
         try {
           // Add logic here to look up the user from the credentials supplied
-          const res = await axiosInstance.post('/auth/login', credentials)
+          const res = await axiosInstance.post("/auth/login", credentials);
 
-          if (res.status === 201) {
+          if (res.status === 200) {
             // Any object returned will be saved in `user` property of the JWT
             return res.data;
           } else {
@@ -31,11 +30,15 @@ export default NextAuth({
             return null;
             // You can also Reject this callback with an Error thus the user will be sent to the error page with the error message as a query parameter
           }
+        } catch (error) {
+          if (error instanceof AxiosError) {
+            throw new Error(error.response?.data.message);
+          }
+          if (error instanceof Error) {
+            throw new Error(error.message);
+          }
         }
-        catch (error) {
-          throw new Error(error.response.data.message);
-        }
-      }
+      },
     }),
   ],
   pages: {

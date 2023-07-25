@@ -1,27 +1,28 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import { Tab, Tabs, TextField, Typography } from "@mui/material";
 import { Toaster, toast } from "react-hot-toast";
 import Link from "next/link";
 import { axiosInstance } from "@/axios";
 import { useSession } from "next-auth/react";
 import Chat from "./components/Chat";
+import { IssueType, IssueTypeWithHandler } from "@/types/Issue";
 
 export default function Home() {
   const session = useSession();
 
   const [value, setValue] = useState(0);
-  const [openItems, setOpenItems] = useState([]);
-  const [requestItems, setRequestItems] = useState([]);
+  const [openItems, setOpenItems] = useState<IssueType[]>([]);
+  const [requestItems, setRequestItems] = useState<IssueType[]>([]);
   const [closedItems, setClosedItems] = useState([]);
 
-  const [activeChat, setActiveChat] = useState({});
+  const [activeChat, setActiveChat] = useState<IssueTypeWithHandler | {}>({});
 
   const getUserOpenChats = async () => {
     try {
       const response = await axiosInstance.get(
-        `/issue/chats/open/${session.data?.user.user._id}`
+        `/issue/chats/open/${session.data?.user?.email!}`
       );
 
       return response.data.openIssues;
@@ -34,7 +35,7 @@ export default function Home() {
   const getUserRequestedChats = async () => {
     try {
       const response = await axiosInstance.get(
-        `/issue/chats/requested/${session.data?.user.user._id}`
+        `/issue/chats/requested/${session.data?.user?.email}`
       );
 
       return response.data.requestedIssues;
@@ -45,23 +46,21 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log(session.data)
-    if (session.data?.user.user._id) {
+    console.log(session.data);
+    if (session.data?.user?.email) {
       Promise.all([getUserOpenChats(), getUserRequestedChats()]).then(
-        ([openIssues, requestedIssues]) => {
-          openIssues &&
-            openIssues.length !== 0 &&
-            setOpenItems([...openIssues]);
+        ([openIssues, requestedIssues]: [IssueType[], IssueType[]]) => {
+          openIssues && openIssues.length !== 0 && setOpenItems(openIssues);
 
           requestedIssues &&
             requestedIssues.length !== 0 &&
-            setRequestItems([...requestedIssues]);
+            setRequestItems(requestedIssues);
         }
       );
     }
   }, [session.data?.user]);
 
-  if(!session) return <h1>Loading</h1>
+  if (!session) return <h1>Loading</h1>;
 
   return (
     <>
@@ -75,7 +74,7 @@ export default function Home() {
         <Toaster position="top-right" />
 
         <div className="fixed bottom-3 right-3 px-3 py-4 border-2 border-black bg-white">
-          <Link href={`/profile/${session.data?.user.user._id}`}>Profile</Link>
+          <Link href={`/profile/${session.data?.user?.email}`}>Profile</Link>
         </div>
 
         <div className="fixed bottom-3 left-3 px-3 py-4 border-2 border-black bg-white">
@@ -103,7 +102,7 @@ export default function Home() {
 
               {value === 0 && (
                 <div className="my-2 space-y-1">
-                  {openItems.map((item, id) => (
+                  {openItems.map((item: IssueType, id) => (
                     <div
                       key={id}
                       className="mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24 cursor-pointer"
@@ -125,7 +124,7 @@ export default function Home() {
               )}
               {value === 1 && (
                 <div className="my-2 space-y-1">
-                  {requestItems.map((item, id) => (
+                  {requestItems.map((item: IssueType, id) => (
                     <div
                       key={id}
                       className="mx-1 px-2 py-1 border-2 bg-red-100 border-dotted rounded h-24 cursor-pointer"
@@ -222,16 +221,21 @@ export default function Home() {
             ) : (
               <div>
                 <div className="bg-red-200 grid grid-cols-3 px-6 py-4 sticky top-0">
-                  <h1>{activeChat.handler.name}</h1>
+                  <h1>{(activeChat as IssueTypeWithHandler).handler.name}</h1>
                   <div className="text-center">
-                    {activeChat.type.toUpperCase()} &nbsp;
-                    <span>#{activeChat.tokenId}</span>
+                    {(activeChat as IssueTypeWithHandler).type.toUpperCase()}{" "}
+                    &nbsp;
+                    <span>#{(activeChat as IssueTypeWithHandler).tokenId}</span>
                   </div>
-                  <p className="text-right">{activeChat.studentEmail}</p>
+                  <p className="text-right">
+                    {(activeChat as IssueTypeWithHandler).studentEmail}
+                  </p>
                 </div>
                 <div className="h-(calc(100vh-56px))">
                   {/* <Chat /> */}
-                  <Chat issueId={activeChat.tokenId} />
+                  <Chat
+                    issueId={(activeChat as IssueTypeWithHandler).tokenId}
+                  />
                 </div>
               </div>
             )}
@@ -240,39 +244,52 @@ export default function Home() {
           <div className="col-span-1 bg-pink-100 ">
             {Object.keys(activeChat).length !== 0 && (
               <>
-                <h1>{activeChat.studentEmail}</h1>
-                <h1>{activeChat.studentPhone}</h1>
+                <h1>{(activeChat as IssueTypeWithHandler).studentEmail}</h1>
+                <h1>{(activeChat as IssueTypeWithHandler).studentPhone}</h1>
 
                 {/* <h1>{JSON.stringify(activeChat.info)}</h1> */}
 
-                {activeChat.type == "no-access" && (
+                {(activeChat as IssueTypeWithHandler).type == "no-access" && (
                   <>
                     <h1>NO-ACCESS</h1>
-                    <h1>{activeChat.courseName}</h1>
+                    <h1>
+                      {(activeChat as IssueTypeWithHandler).info?.courseName}
+                    </h1>
                     <Image
-                      src={activeChat.info?.myCoursesScreenshot}
+                      src={
+                        (activeChat as IssueTypeWithHandler).info
+                          ?.myCoursesScreenshot
+                      }
                       width={500}
                       height={500}
                       alt="Alt Image"
                     />
                     <Image
-                      src={activeChat.info?.paymentReceiptScreenshot}
+                      src={
+                        (activeChat as IssueTypeWithHandler).info
+                          ?.paymentReceiptScreenshot
+                      }
                       width={500}
                       height={500}
                       alt="Alt Image"
                     />
                   </>
                 )}
-                {activeChat.type == "assignment" && (
+                {(activeChat as IssueTypeWithHandler).type == "assignment" && (
                   <>
                     <h1> assignment</h1>
                   </>
                 )}
-                {activeChat.type == "batch-change" && (
+                {(activeChat as IssueTypeWithHandler).type ==
+                  "batch-change" && (
                   <>
                     <h1>batch-change</h1>
-                    <h1>{activeChat.oldCourseName}</h1>
-                    <h1>{activeChat.newCourseName}</h1>
+                    <h1>
+                      {(activeChat as IssueTypeWithHandler).info.oldCourseName}
+                    </h1>
+                    <h1>
+                      {(activeChat as IssueTypeWithHandler).info.newCourseName}
+                    </h1>
                     {/* <Image
                       src={activeChat.info?.paymentReceiptScreenshot}
                       width={500}
@@ -281,20 +298,11 @@ export default function Home() {
                     /> */}
                   </>
                 )}
-                {activeChat.type == "other" && <h1>other</h1>}
-                {activeChat.attachments.length > 0 && <div>Attachments:</div>}
-
-                {activeChat.attachments.length > 0 &&
-                  attachments.map((attachment, id) => (
-                    <></>
-
-                    // <Image
-                    //   src={attachment}
-                    //   width={500}
-                    //   height={500}
-                    //   alt="Alt Image"
-                    // />
-                  ))}
+                {(activeChat as IssueTypeWithHandler).type == "other" && (
+                  <h1>other</h1>
+                )}
+                {(activeChat as IssueTypeWithHandler).attachments!.length >
+                  0 && <div>Attachments:</div>}
               </>
             )}
           </div>

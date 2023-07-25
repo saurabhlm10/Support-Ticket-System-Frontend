@@ -8,11 +8,11 @@ import { Autocomplete, TextField } from "@mui/material";
 
 export default function Filter() {
   const methods = useForm();
-  const [handlers, setHandlers] = useState([]);
+  const [handlers, setHandlers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [handlersList, setHandlersList] = useState([]);
+  const [handlersList, setHandlersList] = useState<Agent[]>([]);
 
-  const filterChats = async (data) => {
+  const filterChats = async (data: any) => {
     console.log(data);
   };
 
@@ -27,7 +27,7 @@ export default function Filter() {
     try {
       const response = await axiosInstance.get("/agent/getAllAgents");
 
-      response.data.allAgentsList.forEach((agent) => {
+      response.data.allAgentsList.forEach((agent: Agent) => {
         setHandlersList((list) => [...list, agent]);
         setHandlers((handlers) => [...handlers, agent.name]);
       });
@@ -71,7 +71,7 @@ export default function Filter() {
                   {errors.studentEmail && (
                     <span className="text-red-500">
                       {" "}
-                      {errors.studentEmail.message}
+                      {errors.studentEmail.message as string}
                     </span>
                   )}
                 </div>
@@ -91,7 +91,7 @@ export default function Filter() {
                   {errors.studentPhone && (
                     <span className="text-red-500">
                       {" "}
-                      {errors.studentPhone.message}
+                      {errors.studentPhone.message as string}
                     </span>
                   )}
                 </div>
@@ -117,7 +117,7 @@ export default function Filter() {
                   {errors.domain && (
                     <span className="text-red-500">
                       {" "}
-                      {errors.domain.message}
+                      {errors.domain.message as string}
                     </span>
                   )}
                 </div>
@@ -144,7 +144,7 @@ export default function Filter() {
                   {errors.status && (
                     <span className="text-red-500">
                       {" "}
-                      {errors.status.message}
+                      {errors.status.message as string}
                     </span>
                   )}
                 </div>
@@ -169,7 +169,10 @@ export default function Filter() {
                     ))}
                   </select>
                   {errors.type && (
-                    <span className="text-red-500"> {errors.type.message}</span>
+                    <span className="text-red-500">
+                      {" "}
+                      {errors.type.message as string}
+                    </span>
                   )}
                 </div>
 
@@ -217,8 +220,6 @@ export default function Filter() {
                       </option>
                     ))}
                   </select>
-
-                 
                 </div>
 
                 <div className="mt-6">

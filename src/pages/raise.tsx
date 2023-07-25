@@ -1,4 +1,4 @@
-import ReactNode, { useEffect, useRef, useState } from "react";
+import ReactNode, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { courses } from "../courses";
 import axios, { AxiosError } from "axios";
 import { Autocomplete, TextField } from "@mui/material";
@@ -15,77 +15,83 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import issueSchema from "../models/issueSchema";
 
+interface TicketFormData {
+  studentName: string;
+  studentEmail: string;
+  studentPhone: string;
+  issueType: "assignment" | "batch-change" | "no-access" | "other";
+  attachments?: File[];
+  description?: string;
+}
+
 const create = () => {
   const router = useRouter();
 
   const session = useSession();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [handlersArray, setHandlersArray] = useState([]);
-  const [allHandlersList, setAllHandlersList] = useState([]);
-  const [linkToggler, setLinkToggler] = useState("Link");
-  const [studentName, setStudentName] = useState("saurabh");
-  const [studentEmail, setStudentEmail] = useState("saurabh@gmail.com");
-  const [studentPhone, setStudentPhone] = useState(1111111111);
-  const [issueType, setIssueType] = useState("No-Access");
-  const [description, setDescription] = useState("");
-  const [attachments, setAttachments] = useState([]);
+  const [handlersArray, setHandlersArray] = useState<Agent[]>([]);
+  const [allHandlersList, setAllHandlersList] = useState<Agent[]>([]);
+  const [linkToggler, setLinkToggler] = useState<string>("Link");
+  const [studentName, setStudentName] = useState<string>("saurabh");
+  const [studentEmail, setStudentEmail] = useState<string>("saurabh@gmail.com");
+  const [studentPhone, setStudentPhone] = useState<string>("1111111111");
+  const [issueType, setIssueType] = useState<string>("No-Access");
+  const [description, setDescription] = useState<string>("");
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   // No Access Info States
 
-  const [noAccessCourseName, setNoAccessCourseName] = useState("");
-  const [paymentReceipt, setPaymentReceipt] = useState("");
-  const [removePaymentReceipt, setRemovePaymentReceipt] = useState(false);
+  const [noAccessCourseName, setNoAccessCourseName] = useState<string>("");
+  const [paymentReceipt, setPaymentReceipt] = useState<string | File>("");
+  const [removePaymentReceipt, setRemovePaymentReceipt] =
+    useState<boolean>(false);
 
   // Batch Change Info States
 
   const [batchChangePrevCourseName, setBatchChangePrevCourseName] =
-    useState("");
-  const [batchChangeNewCourseName, setBatchChangeNewCourseName] = useState("");
+    useState<string>("");
+  const [batchChangeNewCourseName, setBatchChangeNewCourseName] =
+    useState<string>("");
 
   // Assignment Info States
 
-  const [assignmentNotChecked, setAssignmentNotChecked] = useState(false);
+  const [assignmentNotChecked, setAssignmentNotChecked] =
+    useState<boolean>(false);
 
   // Other Info States
 
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState<string>("");
 
   // Refs
-  const paymentReceiptImageInputRef = useRef(null);
+  const paymentReceiptImageInputRef = useRef<HTMLInputElement | null>(null);
 
   // Handle Missing Fields states
-  const [missingFields, setMissingFields] = useState([]);
-
-  // Handle Error Messages States
-  const [studentEmailErrorMessage, setStudentEmailErrorMessage] =
-    useState("default");
-  const [studentPhoneErrorMessage, setStudentPhoneErrorMessage] =
-    useState("default");
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   // No Access Error Fields
   const [noAccessCourseNameErrorMessage, setNoAccessCourseNameErrorMessage] =
-    useState("default");
+    useState<string>("default");
   const [paymenReceiptErrorMessage, setPaymenReceiptErrorMessage] =
-    useState("default");
+    useState<string>("default");
 
   // Batch Change Error Fields
   const [
     batchChangePrevCourseNameErrorMessage,
     setBatchChangePrevCourseNameErrorMessage,
-  ] = useState("default");
+  ] = useState<string>("default");
   const [
     batchChangeNewCourseNameErrorMessage,
     setBatchChangeNewCourseNameErrorMessage,
-  ] = useState("default");
+  ] = useState<string>("default");
 
   // Assignment Error Fields
   const [descriptionErrorMessage, setDescriptionErrorMessage] =
-    useState("default");
+    useState<string>("default");
 
   // Other(Issue Type) Error Fields
-  const [titleErrorMessage, setTitleErrorMessage] = useState("default");
+  const [titleErrorMessage, setTitleErrorMessage] = useState<string>("default");
 
   if (!session) return <h1>Loading</h1>;
 
@@ -93,13 +99,13 @@ const create = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<TicketFormData>({
     resolver: zodResolver(issueSchema),
   });
 
   let moveAhead = true;
 
-  const createTicket = async (data) => {
+  const createTicket = async (data: TicketFormData) => {
     setIsLoading(true);
 
     if (handlersArray.length === 0) {
@@ -125,7 +131,7 @@ const create = () => {
             /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?$/i
           );
 
-          if (!paymentReceiptRegex.test(paymentReceipt)) {
+          if (!paymentReceiptRegex.test(paymentReceipt as string)) {
             setMissingFields((prev) => [...prev, "paymentReceipt"]);
             setPaymenReceiptErrorMessage(
               "Please Add A Valid Payment Receipt Link"
@@ -189,7 +195,7 @@ const create = () => {
             /^(https?:\/\/)?[a-z0-9-]+(\.[a-z0-9-]+)+([/?#][^\s]*)?$/i
           );
 
-          if (!paymentReceiptRegex.test(paymentReceipt)) {
+          if (!paymentReceiptRegex.test(paymentReceipt as string)) {
             setMissingFields((prev) => [...prev, "paymentReceipt"]);
             setPaymenReceiptErrorMessage(
               "Please Add A Valid Payment Receipt Link"
@@ -288,7 +294,7 @@ const create = () => {
         studentName,
         studentEmail,
         studentPhone,
-        raiser: session.data?.user.user._id,
+        raiser: session.data?.user?.email,
         potentialHandlers:
           handlersArray.length > 1
             ? handlersArray.map((handler) => handler._id)
@@ -315,7 +321,7 @@ const create = () => {
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {
-        toast.error(error.response.data.message);
+        toast.error(error.response?.data.message);
       }
       if (error instanceof Error) {
         toast.error(error.message);
@@ -331,17 +337,18 @@ const create = () => {
 
       setAllHandlersList([...response.data.allAgentsList]);
 
-      const tempSpecialHandlersList = response.data.allAgentsList.filter(
-        (handler) => handler.role === "admin"
-      );
+      const tempSpecialHandlersList: Agent[] =
+        response.data.allAgentsList.filter(
+          (handler: Agent) => handler.role === "admin"
+        );
       const restHandlersList = response.data.allAgentsList.filter(
-        (handler) => !tempSpecialHandlersList.includes(handler)
+        (handler: Agent) => !tempSpecialHandlersList.includes(handler)
       );
 
       setAllHandlersList([...tempSpecialHandlersList, ...restHandlersList]);
     } catch (error) {
       if (error instanceof AxiosError) {
-        toast.error(error.response.data.message);
+        toast.error(error.response?.data.message);
       }
       if (error instanceof Error) {
         toast.error(error.message);
@@ -361,7 +368,7 @@ const create = () => {
   }, []);
 
   useEffect(() => {
-    let tempSpecialHandlersList;
+    let tempSpecialHandlersList: Agent[];
     let restHandlersList;
     switch (issueType) {
       case "No-Access":
@@ -564,7 +571,7 @@ const create = () => {
                           type="text"
                           name="paymentReceiptLink"
                           className="border-2 w-full"
-                          value={paymentReceipt}
+                          value={paymentReceipt as string}
                           onChange={(e) => {
                             setMissingFields((prev) => {
                               const filteredMissingFields = prev.filter(
@@ -597,7 +604,7 @@ const create = () => {
                           ref={paymentReceiptImageInputRef}
                           name="paymentReceiptImage"
                           className=""
-                          onChange={(e) => {
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => {
                             setMissingFields((prev) => {
                               const filteredMissingFields = prev.filter(
                                 (field) => field !== "paymentReceipt"
@@ -605,7 +612,10 @@ const create = () => {
                               return [...filteredMissingFields];
                             });
                             setRemovePaymentReceipt(true);
-                            setPaymentReceipt(e.target.files[0]);
+                            const selectedFile = e.target?.files?.[0];
+                            if (selectedFile) {
+                              setPaymentReceipt(selectedFile);
+                            }
                           }}
                         />
                         {removePaymentReceipt && (
@@ -613,7 +623,9 @@ const create = () => {
                             className="text-red-700"
                             onClick={() => {
                               setRemovePaymentReceipt(false);
-                              paymentReceiptImageInputRef.current.value = null;
+                              if (paymentReceiptImageInputRef.current) {
+                                paymentReceiptImageInputRef.current.value = "";
+                              }
                               setPaymentReceipt("");
                             }}
                           >
@@ -746,7 +758,7 @@ const create = () => {
                       <div className="w-2/3">
                         <input
                           type="text"
-                          value={paymentReceipt}
+                          value={paymentReceipt as string}
                           name="paymentReceiptLink"
                           className="border-2 w-full"
                           onChange={(e) => {
@@ -792,7 +804,10 @@ const create = () => {
                                 return [...filteredMissingFields];
                               });
                               setRemovePaymentReceipt(true);
-                              setPaymentReceipt(e.target.files[0]);
+                              const selectedFile = e.target?.files?.[0];
+                              if (selectedFile) {
+                                setPaymentReceipt(selectedFile);
+                              }
                             }}
                           />
                           {removePaymentReceipt && (
@@ -806,8 +821,10 @@ const create = () => {
                                   return [...filteredMissingFields];
                                 });
                                 setRemovePaymentReceipt(false);
-                                paymentReceiptImageInputRef.current.value =
-                                  null;
+                                if (paymentReceiptImageInputRef.current) {
+                                  paymentReceiptImageInputRef.current.value =
+                                    "";
+                                }
                                 setPaymentReceipt("");
                               }}
                             >
@@ -1008,7 +1025,7 @@ const create = () => {
                     className="hidden"
                     value=""
                     onChange={(e) =>
-                      setAttachments([...attachments, e.target.files[0]])
+                      setAttachments([...attachments, e.target.files![0]])
                     }
                   />
                 </div>
@@ -1020,8 +1037,8 @@ const create = () => {
             <textarea
               name=""
               id=""
-              cols="30"
-              rows="10"
+              cols={30}
+              rows={10}
               className="border-2"
               onChange={(e) => {
                 setMissingFields((prev) => {
@@ -1049,6 +1066,7 @@ const create = () => {
           {isLoading ? (
             <div className="grid place-content-center ">
               <Image
+                alt="Loading"
                 className="animate-spin text-white fill-white"
                 src={LoadingIcon}
                 width={24}
