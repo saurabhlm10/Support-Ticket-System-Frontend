@@ -1,0 +1,1 @@
+export const courses: string[] = ['Web Dev 1.0', 'Java 1.0', 'Data Science 1.0']

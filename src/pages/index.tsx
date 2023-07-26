@@ -25,7 +25,7 @@ export default function Home() {
         `/issue/chats/open/${session.data?.user?.email!}`
       );
 
-      return response.data.openIssues;
+      return response.data.issues;
     } catch (error) {
       toast.error("Cannot Fetch Open Chats");
       console.log(error);
@@ -38,7 +38,7 @@ export default function Home() {
         `/issue/chats/requested/${session.data?.user?.email}`
       );
 
-      return response.data.requestedIssues;
+      return response.data.issues;
     } catch (error) {
       toast.error("Cannot Fetch Requested Chats");
       console.log(error);

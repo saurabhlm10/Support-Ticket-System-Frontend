@@ -23,7 +23,7 @@ export default NextAuth({
 
           if (res.status === 200) {
             // Any object returned will be saved in `user` property of the JWT
-            return res.data;
+            return res.data.user;
           } else {
             // If you return null then an error will be displayed advising the user to check their details.
             // throw new Error('Wrong email or password');
@@ -45,14 +45,31 @@ export default NextAuth({
     signIn: "/login",
   },
   callbacks: {
+    // async jwt({ token, user }) {
+    //   // console.log('TOKEN', token)
+    //   // console.log('USER', user)
+    //   return { ...token, ...user };
+    // },
+    // async session({ session, token }) {
+    //   // console.log('SESSION TOKEN', token)
+    //   session.user = token;
+    //   return session;
+    // },
     async jwt({ token, user }) {
-      // console.log('TOKEN', token)
-      // console.log('USER', user)
-      return { ...token, ...user };
+      if (user) {
+        // console.log(user)
+        // const user2 = user.user
+        return { ...token, user };
+      }
+      return { ...token, user };
     },
     async session({ session, token }) {
-      // console.log('SESSION TOKEN', token)
-      session.user = token;
+      console.log(session.user)
+      console.log(token)
+      if (token && session.user) {
+        console.log(token)
+        session.user.email = token.email as string;
+      }
       return session;
     },
   },

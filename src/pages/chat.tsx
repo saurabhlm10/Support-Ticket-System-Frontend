@@ -2,13 +2,6 @@ import { axiosInstance } from "@/axios";
 import { pusherClient } from "@/lib/pusher";
 import React, { useEffect, useState } from "react";
 
-interface MessageBody {
-  text: string;
-  senderId: string;
-  senderName: string;
-  issueId: string;
-  timestamp: string;
-}
 
 const Messages = () => {
   const [messages, setMessages] = useState<MessageBody[]>([]);

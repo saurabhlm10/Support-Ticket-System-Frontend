@@ -297,9 +297,9 @@ const create = () => {
         raiser: session.data?.user?.email,
         potentialHandlers:
           handlersArray.length > 1
-            ? handlersArray.map((handler) => handler._id)
+            ? handlersArray.map((handler) => handler.email)
             : [],
-        handler: handlersArray.length === 1 ? handlersArray[0]._id : "",
+        handler: handlersArray.length === 1 ? handlersArray[0].email : "",
         info,
         description,
         // attachments,
@@ -335,13 +335,12 @@ const create = () => {
     try {
       const response = await axiosInstance.get("/agent/getAllAgents");
 
-      setAllHandlersList([...response.data.allAgentsList]);
+      setAllHandlersList([...response.data.agents]);
 
-      const tempSpecialHandlersList: Agent[] =
-        response.data.allAgentsList.filter(
-          (handler: Agent) => handler.role === "admin"
-        );
-      const restHandlersList = response.data.allAgentsList.filter(
+      const tempSpecialHandlersList: Agent[] = response.data.agents.filter(
+        (handler: Agent) => handler.role === "admin"
+      );
+      const restHandlersList = response.data.agents.filter(
         (handler: Agent) => !tempSpecialHandlersList.includes(handler)
       );
 
@@ -918,7 +917,7 @@ const create = () => {
                     getOptionLabel={(option) => option.name}
                     renderOption={(props, option, state) => (
                       <li
-                        key={option._id}
+                        key={option.email}
                         onClick={() => {
                           setMissingFields((prev) => {
                             const filteredMissingFields = prev.filter(
@@ -929,7 +928,7 @@ const create = () => {
                           setHandlersArray((prev) => [...prev, option]);
                           const filteredAllHandlersList =
                             allHandlersList.filter(
-                              (handler) => handler._id !== option._id
+                              (handler) => handler.email !== option.email
                             );
                           setAllHandlersList([...filteredAllHandlersList]);
                         }}

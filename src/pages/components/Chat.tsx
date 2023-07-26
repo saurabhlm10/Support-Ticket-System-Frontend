@@ -1,30 +1,61 @@
 import { axiosInstance } from "@/axios";
-import { useEffect, useRef, useState } from "react";
+import {
+  FC,
+  FormEvent,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "react-hot-toast";
 import { pusherClient } from "@/lib/pusher";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { fetchRedis } from "../../helpers/fetchRedis";
 import { AxiosError } from "axios";
 import Link from "next/link";
 import LoadingIcon from "public/icons/loading.svg";
 import Image from "next/image";
+import { fetchRedis } from "@/helpers/fetchRedis";
 
-const Chat = ({ issueId }) => {
+interface ChatProps {
+  issueId: string;
+}
+
+const Chat: FC<ChatProps> = ({ issueId }) => {
   const session = useSession();
 
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState<string>("");
+
+  const [input, setInput] = useState<string>("");
+  const [messages, setMessages] = useState<MessageBody[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [showFileModal, setShowFileModal] = useState(false);
 
-  const scrollDownRef = useRef(null);
-  const fileRef = useRef(null);
-  const sendButtonRef = useRef(null);
+  const scrollDownRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const sendButtonRef = useRef<HTMLButtonElement>(null);
 
-  const sendMessage = async (event) => {
+  const getNameOfUser = async (email: string) => {
+    try {
+      const response = await axiosInstance.get(`/agent/getAgent/${email}`);
+
+      console.log(response.data.agent.name);
+
+      setName(response.data.agent.name);
+    } catch (error) {
+      console.log(error);
+      if (error instanceof AxiosError) {
+        return toast.error(error.response?.data.message);
+      }
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    }
+  };
+
+  const sendMessage = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (showFileModal) return sendFile();
@@ -38,20 +69,13 @@ const Chat = ({ issueId }) => {
 
       const message = {
         text: input,
-        senderId: session.data?.user.user._id,
-        senderName: session.data?.user.user.name,
+        senderEmail: session.data?.user?.email,
+        senderName: name,
         issueId,
         timestamp,
       };
 
       await axiosInstance.post(`/chat/sendMessage`, message);
-      // await fetchRedis(
-      //   "zadd",
-      //   `chat:${issueId}:messages`,
-      //   timestamp,
-      //   JSON.stringify(message)
-      // );
-
       setInput("");
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -63,28 +87,46 @@ const Chat = ({ issueId }) => {
     }
   };
 
-  const sendFile = (e) => {
+  const sendFile = () => {
     setIsLoading(true);
     const reader = new FileReader();
-    reader.readAsDataURL(fileRef.current.files[0]);
+    if (
+      fileRef.current &&
+      fileRef.current.files &&
+      fileRef.current.files.length > 0
+    ) {
+      reader.readAsDataURL(fileRef.current.files[0]);
+    }
     reader.onload = async () => {
       const formData = new FormData();
 
-      formData.append("file", fileRef.current.files[0]);
-      formData.append("filename", fileRef.current.files[0].name);
-      formData.append("issueId", issueId);
-      formData.append("senderId", session.data?.user.user._id);
-      formData.append("senderName", session.data?.user.user.name);
-      formData.append("timestamp", Date.now());
+      const timestamp: string = String(Date.now());
 
+      if (
+        fileRef.current &&
+        fileRef.current.files &&
+        fileRef.current.files.length > 0
+      ) {
+        formData.append("file", fileRef.current.files[0]);
+        formData.append("filename", fileRef.current.files[0].name);
+        formData.append("issueId", issueId);
+        formData.append("senderEmail", session.data?.user?.email!);
+        formData.append("senderName", name);
+        formData.append("timestamp", timestamp);
+      }
       try {
         await axiosInstance.post("/chat/sendFile", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-
-        fileRef.current.value = null;
+        if (
+          fileRef.current &&
+          fileRef.current.files &&
+          fileRef.current.files.length > 0
+        ) {
+          fileRef.current.value = "";
+        }
       } catch (error) {
         console.log(error);
         toast.error("Something Went Wrong");
@@ -109,12 +151,14 @@ const Chat = ({ issueId }) => {
       const results = await fetchRedis(
         "zrange",
         `chat:${issueId}:messages`,
-        0,
-        -1
+        "0",
+        "-1"
       );
 
       if (results) {
-        const dbMessages = results.map((message) => JSON.parse(message));
+        const dbMessages = results.map((message: string) =>
+          JSON.parse(message)
+        );
 
         setMessages(dbMessages);
       }
@@ -125,9 +169,15 @@ const Chat = ({ issueId }) => {
   };
 
   useEffect(() => {
+    if (session.data?.user?.email) {
+      getNameOfUser(session.data?.user?.email);
+    }
+  }, [session.data]);
+
+  useEffect(() => {
     getMessages();
 
-    const handleNewMessage = (message) => {
+    const handleNewMessage = (message: MessageBody) => {
       setMessages((prev) => {
         const oldArray = [...prev];
         oldArray.push(message);
@@ -154,7 +204,7 @@ const Chat = ({ issueId }) => {
     }
   }, [messages]);
 
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = (timestamp: number) => {
     return format(timestamp, "HH:mm");
   };
 
@@ -165,10 +215,10 @@ const Chat = ({ issueId }) => {
           <div>
             {messages.map((message, id) => {
               const isCurrentUser =
-                message.senderId === session.data?.user.user._id;
+                message.senderEmail === session.data?.user?.email;
 
               const hasNextMessageFromSameUser =
-                messages[id + 1]?.senderId === messages[id].senderId;
+                messages[id + 1]?.senderEmail === messages[id].senderEmail;
               return (
                 <div
                   className={cn("chat-message flex flex-col mt-[2px]", {
@@ -204,7 +254,7 @@ const Chat = ({ issueId }) => {
                         {"filename" in message ? (
                           <div className="flex flex-row items-center gap-3">
                             <Link
-                              href={message.path.join("/")}
+                              href={(message.path as string[]).join("/")}
                               download
                               target="_blank"
                               className="py-1 text-2xl flex flex-row items-center gap-2"
@@ -224,38 +274,14 @@ const Chat = ({ issueId }) => {
                                 />
                               </svg>
 
-                              {message.filename}
+                              {message.filename as string}
                             </Link>
-                            {/* <button
-                              className="border-2 rounded-full p-1"
-                              onClick={() => {
-                                handleDownload(
-                                  message.path.join("/"),
-                                  message.filename
-                                );
-                              }}
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="1.5"
-                                stroke="currentColor"
-                                class="w-6 h-6"
-                              >
-                                <path
-                                  stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
-                                />
-                              </svg>
-                            </button> */}
                           </div>
                         ) : (
                           message.text
                         )}{" "}
                         <span className="ml-2 text-xs text-gray-400jscnsjcnc">
-                          {formatTimestamp(message.timestamp)}
+                          {formatTimestamp(Number(message.timestamp))}
                         </span>
                       </span>
                     </div>
@@ -296,7 +322,9 @@ const Chat = ({ issueId }) => {
             className="hidden "
             onChange={() => {
               setShowFileModal(true);
-              sendButtonRef.current.focus();
+              if (sendButtonRef.current) {
+                sendButtonRef.current.focus();
+              }
             }}
             ref={fileRef}
           />
@@ -325,6 +353,7 @@ const Chat = ({ issueId }) => {
           {isLoading ? (
             <div className="grid place-content-center ">
               <Image
+                alt="Loading"
                 className="animate-spin text-white fill-white"
                 src={LoadingIcon}
                 width={24}
@@ -342,7 +371,12 @@ const Chat = ({ issueId }) => {
 
 export default Chat;
 
-const FileModal = ({ fileRef, setShowFileModal }) => {
+interface FileModalProps {
+  fileRef: MutableRefObject<HTMLInputElement | null>;
+  setShowFileModal: any;
+}
+
+const FileModal: FC<FileModalProps> = ({ fileRef, setShowFileModal }) => {
   return (
     <div className="fixed bottom-0 border-2 border-yellow-300 bg-blue-700 text-white w-1/2 rounded-t-lg p-2">
       <div className="flex flex-row items-center gap-4 text-2xl pb-2">
@@ -360,7 +394,12 @@ const FileModal = ({ fileRef, setShowFileModal }) => {
             d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
           />
         </svg>
-        <div>{fileRef.current.files[0].name}</div>
+        <div>
+          {fileRef &&
+            fileRef.current &&
+            fileRef.current.files &&
+            fileRef.current.files[0].name}
+        </div>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -369,7 +408,9 @@ const FileModal = ({ fileRef, setShowFileModal }) => {
           stroke="currentColor"
           className="w-6 h-6 ml-auto cursor-pointer"
           onClick={() => {
-            fileRef.current.value = null;
+            if (fileRef && fileRef.current && fileRef.current.files) {
+              fileRef.current.value = "";
+            }
             setShowFileModal(false);
           }}
         >
